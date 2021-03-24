@@ -1,0 +1,146 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+
+In order to install this package you must have devtools installed. To do so type this into your console:
+install.packages("devtools")
+Once devtools is installed you will need to pull this package from github by typing this into your console:
+devtools::install_github("PatrickChodowski/NBAr")
+once this is installed all you have to do is include NBAr in your library like I have done below by running: library(NBAr)
+These functions also require you to have the tidyverse library installed as well
+
+```{r}
+library(NBAr)
+library(tidyverse)
+```
+
+
+#Example data 
+```{r}
+season <- 2018
+gamelist <- c(21800001:21800003)
+game_id <- 21800001
+
+#get_boxscores
+traditional <- map(gamelist, ~get_boxscore(.,boxscore_type = 'traditional')) %>% compact() %>% bind_rows()
+
+# Crates a table of boxscores from the given list of NBA game IDs. In the example this is a three game sample. It notes who didnt play as well
+
+
+#get_team_boxscore
+team_boxscores <- get_team_boxscore(season = 2018, measure_type = 'Advanced')
+
+# This only returns teams boxscores over the course of the season. That makes it a large table to sift through. The measure types include: 'Base', 'Advanced', 'Four+Factors', 'Misc', 'Scoring'. Also has optional perameters of outcome, season type, opponent ID, period, and game segment
+
+#get_matchups 
+matchup <- get_matchups(game_id)
+
+# Gives in detail data on the matchups that take place in one game. Could be really helpful for indepth analysis on singular game data or could be pulled together for larger analysis
+
+
+#get_playbyplay2
+pbp2 <- map(gamelist, ~get_playbyplay2(.)) %>% compact() %>% bind_rows()
+
+# Gives you an extreamly detailed boxscore that has every action over the course of the game including where the ball was shot from, who was defending and more. Note: I didnt notice any difference between play_by_play and play_by_play2 they both take the same parameters
+
+
+#get_lineups
+lineups <- get_lineups(season, 5, 'Base')
+bulls_lineups <- get_lineups(season, 5, 'Base', team_id = 1610612741)
+
+# Gives you the player ids and names of the lineups of certain players across teams. Allows you to look at different variables across certain lineups like W/L as well as other statistics
+
+
+#get_on_off
+onoff_bulls <- get_on_off(season, 1610612741)
+
+# Gives a list of the players of a team for a given season. The table contains statistics for every players time while on and off the court such as plus/minus and offensive and defensive ratings. It also lists how many games they played in and total minutes played that season. Last number is team ID
+
+
+#get_players & get_playerbio
+players <- get_players(season)
+player_bio <- get_playerbio(season)
+
+# get players gives you a list of players that played that season. There is a category for rostered and some don't have that so I cant tell why they would be on the list if they were never rostered but have the game played flag varable as yes. These people are not assigned a team either. Player bio gives you physical attribues of players that year as well as their stats from the season you imputted
+
+
+#get_shotchart
+shors_abrines <- get_shotchart(203518, season)
+
+# Has very discriptive data on every shot for every player over the course of a season. In order to make sense of this data it would be useful to manipulate it or possibly put it into a chart. Doesnt produce a graph or chart instead a table. The first number is the player ID
+
+
+#get_schedule
+schedule <- get_schedule(season)
+
+# Gives you the complete NBA schedule for the selected season
+
+
+#get_tracking
+tracking <- get_tracking(season, 'Team',measure_type = 'Defense')
+
+# seems like you can track different measures by teams by season. You can change your measure type to track different things. Measre types include: "Drives","Defense","CatchShoot","Passing","Possessions","PullUpShot","Rebounding","Efficiency","SpeedDistance","ElbowTouch","PostTouch","PaintTouch"
+
+
+#get_all_tracking
+all_tracking <- get_all_tracking(season, "Team", measure_types = 'Defense')
+
+# dont see much of a difference between all tracking and tracking above. The difference here is you dont need to put a measure types in and it will return all of them where the one above needs that variable described. measure types include: "Drives","Defense","CatchShoot","Passing","Possessions","PullUpShot","Rebounding","Efficiency","SpeedDistance","ElbowTouch","PostTouch","PaintTouch"
+
+#get_playtype
+playtype <- get_playtype(season, 'T', 'Postup')
+
+# allows you to look at all 32 teams and how they perform givern a certain playtype. I think it would also be possible to organize by player insead of team to see how certain players do in certain play types. The team aspect of this would be more useful to us.
+
+
+#get_genteral
+general <- get_general(season, type = 'Team', 'Base')
+
+# oragnized by teams. This has general team info and organizes them across multiple statistics and ranks them in these statistics out of the 32 teams rather than the numeric value of the statistic
+
+
+#get_hustle
+hustle <- get_hustle(21800001)
+
+# This might be the most interesting as it is the "hustle" stats that dont show up on a normal stat sheet. This gives you these stats per game. It includes things such as deflections, charges drawn, loose balls recovered, boxouts, etc. This is broken down by player within the game. The number in the function is a game ID
+
+
+#get_shooting
+shooting <- get_shooting(season, 'Team', "By+Zone", "Base")
+
+# Breaks down shooting by team. Each teams shooting is broken down by sections of the court such as restricted area, paint, midrange, and different areas of the 3-point land. IT contains shooting percentage from every area as well.
+
+
+#get_defense
+defense <- get_defense(season = 2018, type = 'Team', defense_category = 'Overall', per_mode = 'Totals')
+
+# is sorted by the 32 teams in this example but can aslo be sorted by players. Can look through different types of defense and can sort by season. There are 5 or more other optional variables you can imput into the funtion to further narrow your data
+
+
+#get_news
+news <- get_news(limit = 10)
+
+# Doesnt seem to work for whatever reason. It is supposed to return a data set with weekly news. Doesnt seem too important to what we are doing. limit is the number of recent news you want, defult is 100.
+
+#get_player_movement
+player_movement <- get_player_movement()
+
+# This function gets all the roster tansactions since 2015. Is similar to the data that we had last semester where we were looking at player transactions. This data set might be even more indepth than the one we worked with
+
+
+#get_rotowire_status
+rotowire_status <- get_rotowire_status()
+
+# I get a similar error to that of the funciton to get news. 
+
+#get_shooting_dashboard
+shooting_dashboard <- get_shooting_dashboard(season = 2018, type = 'Team', general_range = 'Overall')
+
+# This is a further breakdown of the shooting function. It allows you to look deeper into things such as shotclock range, dribble range, shot distance range, and touch time range
+```
+
+
