@@ -1,0 +1,491 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+
+
+# Libraries
+```{r}
+library(tidyverse)
+library(data.table)
+library(lubridate)
+library(readxl)
+library(ggpubr)
+library(rstatix)
+```
+
+# Data
+```{r}
+hlm_data <- fread("C:\\Users\\ermin\\Downloads\\nba_long_nets_ready_for_hlm_2.csv")
+```
+
+
+```{r}
+hlm_data <- hlm_data %>% group_by(Coach) %>% 
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  mutate(Coach_Category = case_when(tot_deg_cent >= 0.2959078 ~ "High",
+                        tot_deg_cent <= 0.2959078  & tot_deg_cent >= 0.2632196
+                        ~"Mid",
+                               tot_deg_cent <= 0.2632196 ~ "Low")) 
+```
+
+# Outcomes 
+
+```{r}
+hlm_data %>% group_by(Coach) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach, outcomeGame, mean_centralization) %>% tally() %>%
+  group_by(Coach) %>% mutate(win_pct = n/sum(n)) %>% filter(outcomeGame == "W") 
+```
+> Billy Donovan, David Blatt, and Tyronn Lue they have high centralization with a high win percentage. This could be due to having superstars like Billy Donovan having KD and Russell Westbrook, and David Blatt and Tyronn Lue having Lebron James. They all have around .3 centralization and more than .62 win pct. 
+> Golden State and San Antonio Spurs have lower centralizations than the other super star teams giving them a higher win percentage. 
+> There seems to be no real correlation between centralization and win percentage.
+
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach, outcomeGame, mean_centralization, Coach_Category) %>% tally() %>% group_by(Coach) %>% mutate(win_pct = n/sum(n)) %>% filter(outcomeGame == "W") %>%
+  ggplot(aes(x = mean_centralization, y = win_pct, color = Coach_Category))+ geom_smooth(method = "lm")
+```
+
+```{r}
+ggplot(data = hlm_data) + 
+  geom_bar(mapping = aes(x = Coach_Category))
+
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach, outcomeGame, mean_centralization, Coach_Category) %>% tally() %>%
+  group_by(Coach) %>% mutate(win_pct = n/sum(n)) %>% filter(outcomeGame == "W")
+```
+
+
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach, outcomeGame, mean_centralization, Coach_Category) %>% tally() %>%
+  group_by(Coach) %>% mutate(win_pct = n/sum(n)) %>% filter(outcomeGame == "W") %>%
+  ungroup() %>%select(mean_centralization, win_pct) %>% corrr::correlate()
+```
+>***
+
+```{r}
+hlm_data %>% group_by(Coach) %>%
+  mutate(sd_centralization = sd(tot_deg_cent)) %>%
+  group_by(Coach, outcomeGame, sd_centralization) %>% tally() %>%
+  group_by(Coach) %>% mutate(win_pct = n/sum(n)) %>% filter(outcomeGame == "W") %>%
+ ggplot(aes(y = win_pct, x = sd_centralization)) + geom_smooth(method = "lm")
+```
+
+```{r}
+hlm_data %>% group_by(Coach) %>%
+  mutate(sd_centralization = sd(tot_deg_cent)) %>%
+  group_by(Coach, outcomeGame, sd_centralization) %>% tally() %>%
+  group_by(Coach) %>% mutate(win_pct = n/sum(n)) %>% filter(outcomeGame == "W") %>%
+ ungroup() %>%select(sd_centralization, win_pct) %>% corrr::correlate()
+```
+
+> This graph is not what I thought it would be alot of variance in the beginning and gets smaller until the end. 
+
+
+label coaches low medium high lvls of centralization and standard dev cut low 20th pct moderate to high is upper pct
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, ptsTeam, Coach_Category) %>% 
+  mutate(mean_pts = mean(ptsTeam)) %>%  tally()
+```
+
+
+
+```{r}
+hlm_data %>% group_by(Coach, ptsTeam, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, ptsTeam, Coach_Category) %>% 
+  mutate(mean_pts = mean(ptsTeam))%>% tally() %>% 
+  ggplot(aes(x = mean_centralization, y = ptsTeam, color = Coach_Category)) + geom_smooth(method = "lm")
+```
+
+
+
+```{r}
+hlm_data %>% group_by(Coach) %>%
+  summarise(mean_centralization = mean(tot_deg_cent)) %>% 
+  pull(mean_centralization) %>% 
+  quantile(na.rm = T)
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach, ptsTeam) %>%
+  mutate(median_centralization = median(tot_deg_cent)) %>%
+  group_by(Coach , median_centralization, ptsTeam) %>% mutate(mean_pts = mean(ptsTeam))%>% tally()
+```
+
+```{r}
+hlm_data %>% group_by(Coach, ptsTeam) %>%
+  mutate(sd_centralization = sd(tot_deg_cent)) %>%
+  group_by(Coach , sd_centralization, ptsTeam) %>% mutate(sd_pts = sd(ptsTeam))%>% tally()
+```
+
+```{r}
+hlm_data %>% group_by(Coach, ptsTeam) %>%
+  mutate(sd_centralization = sd(tot_deg_cent)) %>%
+  group_by(Coach , sd_centralization, ptsTeam) %>% mutate(sd_pts = sd(ptsTeam))%>% tally() %>% ggplot(aes(x = sd_centralization, y = ptsTeam)) + geom_smooth(method = "lm")
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach, ptsTeam) %>%
+  mutate(median_centralization = median(tot_deg_cent)) %>%
+  group_by(Coach , median_centralization, ptsTeam) %>% mutate(mean_pts = mean(ptsTeam))%>% tally() %>% ggplot(aes(x = median_centralization, y = ptsTeam)) +
+  geom_smooth(method = "lm")
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach, outcomeGame, mean_centralization) %>% tally() %>%
+  group_by(Coach) %>% mutate(win_pct = n/sum(n)) %>% filter(outcomeGame == "W") %>% ungroup() %>% select(win_pct, mean_centralization) %>% corrr::correlate()
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, plusminusTeam, Coach_Category) %>% mutate(mean_plus = mean(plusminusTeam))%>% tally()
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, plusminusTeam, Coach_Category) %>% mutate(mean_plus = mean(plusminusTeam))%>% tally() %>%
+  ggplot(aes(x = mean_centralization, y = plusminusTeam, color = Coach_Category)) +
+  geom_smooth(method = "lm")
+```
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, plusminusTeam, Coach_Category) %>% mutate(mean_plus = mean(plusminusTeam))%>% tally() %>%
+  ungroup() %>%select(mean_centralization, plusminusTeam) %>% corrr::correlate()
+```
+
+
+
+
+
+
+```{r}
+hlm_data %>% group_by(Coach) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, plusminusTeam) %>% mutate(mean_plus = mean(plusminusTeam))%>% tally() %>% ggplot(aes(x = mean_centralization, y = plusminusTeam)) + geom_smooth(method = "lm")
+```
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category, pctFGTeam) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, pctFGTeam, Coach_Category) %>% mutate(mean_FGTeam = mean(pctFGTeam))%>% tally()
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach, pctFGTeam, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, pctFGTeam, Coach_Category) %>% mutate(mean_FGTeam = mean(pctFGTeam))%>% tally() %>% 
+  ggplot(aes(x = mean_centralization, y = pctFGTeam, color = Coach_Category)) + geom_smooth(method = "lm")
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category, pctFGTeam) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, pctFGTeam, Coach_Category) %>% mutate(mean_FGTeam = mean(pctFGTeam))%>% tally() %>%
+  ungroup() %>%select(mean_centralization, pctFGTeam) %>% corrr::correlate()
+```
+
+```{r}
+hlm_data %>% group_by(Coach, pctFG3Team, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, pctFG3Team, Coach_Category) %>% 
+  mutate(mean_FG3Team = mean(pctFG3Team))%>% tally()
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach, pctFG3Team, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, pctFG3Team, Coach_Category) %>% 
+  mutate(mean_FG3Team = mean(pctFG3Team))%>% tally() %>% 
+  ggplot(aes(x = mean_centralization, y = pctFG3Team, color = Coach_Category)) + geom_smooth(method = "lm")
+```
+
+
+
+```{r}
+hlm_data %>% group_by(Coach, pctFG3Team, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, pctFG3Team, Coach_Category) %>% 
+  mutate(mean_FG3Team = mean(pctFG3Team))%>% tally() %>% 
+  ungroup() %>% select(pctFG3Team, mean_centralization) %>% corrr::correlate()
+```
+
+```{r}
+hlm_data %>% group_by(Coach, fg3mTeam, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, fg3mTeam, Coach_Category) %>% 
+  mutate(mean_fg3mTeam = mean(fg3mTeam))%>% tally()
+```
+
+
+
+```{r}
+hlm_data %>% group_by(Coach, fg3mTeam, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, fg3mTeam, Coach_Category) %>% 
+  mutate(mean_fg3mTeam = mean(fg3mTeam))%>% tally() %>% 
+  ggplot(aes(x = mean_centralization, y = fg3mTeam, color = Coach_Category)) + geom_smooth(method = "lm")
+```
+
+
+
+```{r}
+hlm_data %>% group_by(Coach, fg3mTeam, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, fg3mTeam, Coach_Category) %>% 
+  mutate(mean_fg3mTeam = mean(fg3mTeam))%>% tally() %>% 
+  ungroup() %>% select(fg3mTeam, mean_centralization) %>% corrr::correlate()
+```
+
+```{r}
+hlm_data %>% group_by(Coach, fg2mTeam, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, fg2mTeam, Coach_Category) %>% 
+  mutate(mean_fg2mTeam = mean(fg2mTeam))%>% tally()
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach, fg2mTeam, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, fg2mTeam, Coach_Category) %>% 
+  mutate(mean_fg2mTeam = mean(fg2mTeam))%>% tally() %>% 
+  ggplot(aes(x = mean_centralization, y = fg2mTeam, color = Coach_Category)) + geom_smooth(method = "lm")
+```
+
+
+
+```{r}
+hlm_data %>% group_by(Coach, fg2mTeam, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, fg2mTeam, Coach_Category) %>% 
+  mutate(mean_fg2mTeam = mean(fg2mTeam))%>% tally() %>% 
+  ungroup() %>% select(fg2mTeam, mean_centralization) %>% corrr::correlate()
+```
+
+```{r}
+hlm_data %>% group_by(Coach, astTeam, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, astTeam, Coach_Category) %>% 
+  mutate(mean_astTeam = mean(astTeam))%>% tally()
+```
+
+
+
+```{r}
+hlm_data %>% group_by(Coach, astTeam, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, astTeam, Coach_Category) %>% 
+  mutate(mean_astTeam = mean(astTeam))%>% tally() %>%
+  ggplot(aes(x = mean_centralization, y = astTeam, color = Coach_Category)) + geom_smooth(method = "lm")
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach, astTeam, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, astTeam, Coach_Category) %>% 
+  mutate(mean_astTeam = mean(astTeam))%>% tally() %>% 
+  ungroup() %>% select(astTeam, mean_centralization) %>% corrr::correlate()
+```
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% 
+  group_by(mean_centralization, Coach, Coach_Category, pass_vol) %>%
+  mutate(mean_passvol = mean(pass_vol))%>% tally() 
+```
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% 
+  group_by(mean_centralization, Coach, Coach_Category, pass_vol) %>%
+  mutate(mean_passvol = mean(pass_vol))%>% tally() %>% 
+  ggplot(aes(x = mean_centralization, y = pass_vol, color = Coach_Category)) +
+  geom_smooth(method = "lm")
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach, pass_vol, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach , mean_centralization, pass_vol, Coach_Category) %>% 
+  mutate(mean_passvol = mean(pass_vol))%>% tally() %>%
+  ungroup() %>% select(pass_vol, mean_centralization) %>% corrr::correlate()
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach, locationGame, mean_centralization) %>% tally() %>%
+  group_by(Coach) %>% mutate(Home_pct = n/sum(n)) %>% filter(locationGame == "H")
+```
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach, locationGame, mean_centralization, Coach_Category) %>% tally() %>%
+  group_by(Coach, Coach_Category) %>% mutate(win_pct = n/sum(n)) %>% 
+  ggplot(aes(x = mean_centralization, y = win_pct, color = locationGame)) + geom_smooth(method = "lm") 
+```
+
+
+> see in the whole data set do we see higher levels of centralization home or away. 
+
+```{r}
+hlm_data %>% group_by(locationGame) %>% mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame) %>% tally()
+```
+
+In the whole data set it seems like away games have a slight increase in tot_deg_cent
+
+> see coaches have higher levels of centralization home or away. 
+
+
+```{r}
+hlm_data %>% group_by(locationGame, Coach) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach) %>% tally() %>% arrange(Coach)
+```
+
+It seems like it depends on the coach on how different there centralization are home or away. For instance Alvin Gentry has a .2739 away and .2931 home which shows some difference in centralization. Then there's Brett Brown who has a .2307 away and .2339 home which does not show much of a difference between home and away. Even more so Billy Donovan has a .3244 away and a .3282 home which shows and even less difference in centralization home or away. Overall, I see that it depends on the coach for the differences in centralization home or away. 
+
+> see teams have higher levels of centralization home or away. 
+
+
+
+```{r}
+hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, TEAM_ABBREVIATION, yearSeason) %>% tally() %>% arrange(TEAM_ABBREVIATION, locationGame, yearSeason)
+```
+
+> not much change in centralization by year for ATL except for 2015 being .200 away and .246 home. For BKN the biggest changes were in 2017 and 2018 being .224 away 2017 and .234 home 2017, .260 away 2018 and .280 home 2018. Overall, I see that by year there is changes in centralization home or away but depends on the team and what year it is happening in. 
+
+
+
+
+> note see if a team shows differences in centralization in different teams they face(group by team and oppo). 
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, slugTeam, slugOpponent, yearSeason) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, locationGame) 
+```
+> I see that the slug opponent gives a lot of variance on who the slug team is play can be big changes in centralization in away games specifically or home games depending on the opponent. 
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, slugTeam, slugOpponent) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, locationGame)
+```
+>  mean centralization varying home or away depends on the opponent. For instance, BKN does not have much change home or away .2590 away and .2588 home. CHA has a lot of variance home and away .2741 away and .2082 home. This is for ATL slugTeam. 
+
+
+```{r warning=FALSE} 
+hlm_data %>% group_by(slugTeam, slugOpponent, yearSeason, locationGame) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, slugTeam, slugOpponent, yearSeason) %>% tally() %>% 
+  filter(slugTeam == "ATL") %>% arrange(yearSeason) %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = slugOpponent)) + geom_smooth(span = .5, se = FALSE) + facet_wrap(~ locationGame)
+```
+
+for each year look at the 
+
+mean centralization per year with error bars for away and home games 
+
+
+> Note Whether or not are one team a reciepent of high low or mid centralizations looking at opps change in centr. 
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, Coach_Category, slugTeam, slugOpponent, locationGame) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent)
+```
+For BKN weird that there is no away mid category 
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, Coach_Category, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, Coach_Category, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, yearSeason, locationGame)
+```
+> not all years have mid centralization, the lows differed alot in different years playing the same opponent. It could be due to different players playing at different years. 
+
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, yearSeason, locationGame) %>% 
+  filter(slugTeam == "GSW", slugOpponent %in% c("CLE", "HOU", "BOS", "LAC") ) %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_line() + facet_wrap(~slugOpponent)
+```
+
+
+make a graph for this 
+
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, Coach_Category, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, Coach_Category, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+  filter(slugTeam == "ATL") %>% ggplot(aes(x = yearSeason, y = mean_centralization, color = slugOpponent)) + geom_smooth(span = .8, se = FALSE) + facet_wrap(~ locationGame)
+```
+
+
+```{r}
+hlm_data %>% group_by(Coach, Coach_Category) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach, locationGame, mean_centralization, Coach_Category) %>% tally() %>%
+  group_by(Coach, Coach_Category) %>% mutate(Home_pct = n/sum(n)) %>% 
+  filter(locationGame == "A") %>% 
+  ggplot(aes(x = mean_centralization, y = Home_pct, color = locationGame)) + geom_smooth(method = "lm") 
+```
+
+
+> make a graph mean centralization on x and pct on y color the line is mapped on location game 
+
+```{r}
+hlm_data %>% group_by(Coach) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>%
+  group_by(Coach, locationGame, mean_centralization) %>% tally() %>%
+  group_by(Coach) %>% mutate(Home_pct = n/sum(n)) %>% filter(locationGame == "A")  
+```
+
+
+
+
+
+
+
+```{r}
+hlm_data 
+```
+
