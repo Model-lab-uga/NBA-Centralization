@@ -1,0 +1,68 @@
+---
+title: "Basketball Network Analysis Data Combination"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(data.table)
+```
+
+# Individual Player - Regular Season Advanced Stats
+We use nbastatR instead for the data given reproducibility and flexibility
+```{r}
+# season_14_18_perf <- map_dfr(paste0("/Users/Neal/Documents/GitHub/Basketball-Networks/nba_season_", seq(2014,2018,1),".csv"), fread)
+# 
+# fwrite(season_14_18_perf, "nba_perf_14_18.csv")
+```
+
+# Index for fixing passing data
+```{r}
+library(nbastatR)
+
+all_player_stats <- game_logs(seasons = 2014:2018, league = "NBA", result_types = "player", season_types = c("Regular Season", "Playoffs"))
+
+# Saving Data Files
+# fwrite(df_nba_player_dict, "nba_player_dictionary_10_2020.csv")
+# fwrite(all_player_stats, "nba_adv_player_stats.csv")
+
+game_id_list_14 <- all_player_stats %>% filter(slugSeason == "2013-14") %>% pull(idGame) %>% unique()
+
+adv_box_scores <- box_scores(game_ids = game_id_list, result_types = "player")
+
+```
+
+
+# Ben's Passing Data 
+At the team level, this data will be used to calculate metrics such as centralization.
+At the individual level, this data will help calculate the relative importance of a particular player during each game.
+```{r}
+season_14_18_pass <- map_dfr(paste0("/Users/Neal/Documents/GitHub/Basketball-Networks/passing_data",paste0(seq(2013,2017,1),seq(14,18,1)),".csv"), fread)
+
+season_14_18_pass <- season_14_18_pass %>% 
+  mutate(gamedate = str_trim(str_replace_all(.$gamedate,"%2F","/"))) %>% 
+  mutate(gamedate = lubridate::mdy(.$gamedate)) 
+  
+playoffs_14_18_pass <- map_dfr(paste0("/Users/Neal/Documents/GitHub/Basketball-Networks/playoffs_passing_data",paste0(seq(2013,2017,1),seq(14,18,1)),".csv"), fread)
+
+playoffs_14_18_pass <- playoffs_14_18_pass %>% 
+  mutate(gamedate = str_trim(str_replace_all(.$gamedate,"%2F","/"))) %>% 
+  mutate(gamedate = lubridate::mdy(.$gamedate))
+
+```
+# Joining Data
+```{r}
+season_14_18_pass_final <- logz %>% 
+  select(slugSeason,typeSeason,dateGame,idGame, idTeam) %>%
+  right_join(season_14_18_pass, by = c("dateGame" = "gamedate", "idTeam" = "TEAM_ID")) 
+
+fwrite(season_14_18_pass_final, "nba_pass_data_14_18.csv")
+
+
+```
+
+
+
+
+
