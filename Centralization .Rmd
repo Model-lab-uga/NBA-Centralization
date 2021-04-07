@@ -19,76 +19,36 @@ hlm_data <- fread("~/Downloads/nba_long_nets_ready_for_hlm_2.csv")
 
 hlm_data <- hlm_data %>% 
   mutate(Game_Category = case_when(tot_deg_cent > .4 ~ "High",
-                        tot_deg_cent < .4 & tot_deg_cent > .2 ~"Mid",
+                  tot_deg_cent < .4 & tot_deg_cent > .2 ~"Mid",
                                tot_deg_cent < .2 ~ "Low")) 
 
 
 ```
 ## High Mid Low (Entire League)
 In this chunk the data is grouped in to 3 categories (High, Mid, Low). High is a game with total degree centralization greater than .4. Mid is a game with a total degree central between .2 and .4. Low is a game with a total degree centralization below .2. For each category the average of all 5 (assists, rebounds,turnovers, FG pct, FT pct) along with pass volume and plus/minus team are calculated. The descriptive for each category are as follows
-
-## High
-High: (Mean) Assist = 22.246, Rebounds = 43.057, Turnovers = 14.073, FG pct  = .456, FT pct = .761, Pass Volume = 572.615, Plus/Minus = -0.354
-
-High (Median): Assist = 22, Rebounds = 43, Turnovers = 14, FG pct = .455, FT pct = .765, TotCent = .432, Pass Volume = 572, Plus/Minus = -1.5
-
-High (Standard Deviation): Assist = 5.066, Rebounds = 6.70, Turnovers = 4.094, FG pct = .056, FT pct = .102, TotCent = .034, Pass Volume = 64.264, Plus/Minus = 15.391
-
-High (IQR): Assist = 7, Rebounds = 6.70, Turnovers = 6, FG pct = .074, FT pct = .137, TotCent = .043, Pass Volume = 83.5, Plus/Minus = 23
-
-## Mid
-Mid: (Mean) Assist = 22.409, Rebounds = 43.326, Turnovers = 14.305, FG pct  = .456, FT pct = .762, Pass Volume = 594.735, Plus/Minus = 0.098
-
-Mid (Median): Assist = 22, Rebounds = 43, Turnovers = 14, FG pct = .455, FT pct = .769, TotCent = .284, Pass Volume = 592, Plus/Minus = 1.0
-
-Mid (Standard Deviation): Assist = 5.153, Rebounds = 6.404, Turnovers = 3.898, FG pct = .055, FT pct = .104, TotCent = .051, Pass Volume = 66.221, Plus/Minus = 13.840
-
-Mid (IQR): Assist = 7, Rebounds = 6.404, Turnovers = 5, FG pct = .076, FT pct = .136, TotCent = .081, Pass Volume = 86, Plus/Minus = 18
-
-## Low
-Low: (Mean)  Assist = 22.719, Rebounds = 43.652, Turnovers = 14.305, FG pct  = .455, FT pct = .757, Pass Volume = 617.468, Plus/Minus = -0.188
-
-Low (Median): Assist = 23, Rebounds = 44, Turnovers = 14, FG pct = .453, FT pct = .763, TotCent = .172, Pass Volume = 614, Plus/Minus = 1.0 
-
-Low (Standard Deviation): Assist = 4.872, Rebounds = 6.500, Turnovers = 4.022, FG pct = .053, FT pct = .104, TotCent = .031, Pass Volume = 69.680, Plus/Minus = 12.370
-
-Low (IQR): Assist = 7, Rebounds = 6.500, Turnovers = 5, FG pct = .071, FT pct = .138, TotCent = .039, Pass Volume = 94, Plus/Minus = 16
 ```{r}
 
-hlm_data %>% group_by(Game_Category) %>% summarise(
-  AvgAst = mean(astTeam, na.rm = TRUE), 
-  AvgReb = mean(trebTeam, na.rm = TRUE), 
-  AvgTov = mean(tovTeam, na.rm = TRUE), 
-  AvgFG = mean(pctFGTeam, na.rm = TRUE), 
-  AvgFT = mean(pctFTTeam, na.rm = TRUE), 
-  AvgTotCen = mean(tot_deg_cent, na.rm = TRUE),
-  AvgPassVol = mean(pass_vol, na.rm = TRUE),
-  AvgPlusMinus = mean(plusminusTeam, na.rm = TRUE))
+GameCategory_League_Descriptives <- function(metric, year){ 
+  
+   if(metric == "sd"){
+         hlm_data %>% filter(yearSeason %in% year) %>% group_by(slugSeason, Game_Category) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(sd, na.rm = TRUE) 
+   }
+   
+    else if(metric == "median"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% group_by(slugSeason, Game_Category) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(median, na.rm = TRUE)
+    }
+   
+   else if(metric == "IQR"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% group_by(slugSeason, Game_Category) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(IQR, na.rm = TRUE) 
+   }
+   
+   else if (metric == "mean"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% group_by(slugSeason, Game_Category) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(mean, na.rm = TRUE) 
+   }
+   
+ }
 
-hlm_data  %>% group_by(Game_Category) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-   MedianAst = median(astTeam, na.rm = TRUE),                              MedianReb = median(trebTeam, na.rm = TRUE), 
-   MedianTov = median(tovTeam, na.rm = TRUE), 
-   MedianFG = median(pctFGTeam, na.rm = TRUE), 
-   MedianFT = median(pctFTTeam, na.rm = TRUE), 
-   MedianTotCen = median(tot_deg_cent, na.rm = TRUE),
-   MedianPassVol = median(pass_vol, na.rm = TRUE),
-   MedianPlusMinus = median(plusminusTeam, na.rm = TRUE))
-
-hlm_data %>%  group_by(Game_Category) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-   StandardDevAst = sd(astTeam, na.rm = TRUE),                             StandardDevReb = sd(trebTeam, na.rm = TRUE), 
-   StandardDevTov = sd(tovTeam, na.rm = TRUE),                             StandardDevFG = sd(pctFGTeam, na.rm = TRUE), 
-   StandardDevFT = sd(pctFTTeam, na.rm = TRUE),                            StandardDevTotCen = sd(tot_deg_cent, na.rm = TRUE),
-   StandardDevPassVol = sd(pass_vol, na.rm = TRUE ),
-   StandardDevPLusMinus = sd(plusminusTeam, na.rm = TRUE))
-
-hlm_data %>% group_by(Game_Category) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-   IQRAst = IQR(astTeam, na.rm = TRUE),                                    IQRReb = sd(trebTeam, na.rm = TRUE), 
-   IQRTov = IQR(tovTeam, na.rm = TRUE), 
-   IQRFG = IQR(pctFGTeam, na.rm = TRUE), 
-   IQRFT = IQR(pctFTTeam, na.rm = TRUE), 
-   IQRTotCen = IQR(tot_deg_cent, na.rm = TRUE),
-   IQRPassVol = IQR(pass_vol, na.rm = TRUE),
-   IQRPlusMinus = IQR(plusminusTeam, na.rm = TRUE))
+GameCategory_League_Descriptives(metric = "sd", year = c(2014, 2015))
 
 ```
 # Outcome of Games High Mid Low
@@ -107,7 +67,7 @@ One interesting take away from this bar chart is that a significant amount of th
 ```{r}
 
 ggplot(data = hlm_data) + 
-  geom_bar(mapping = aes(x = Coach_Category))
+  geom_bar(mapping = aes(x = Game_Category))
 
 ```
 ## Histograms 
@@ -135,72 +95,36 @@ hlm_data %>% filter(!is.na(Game_Category)) %>% ggplot( aes(x = plusminusTeam, fi
   geom_histogram() + facet_wrap(~Game_Category, ncol = 2)
 
 ```
-## Density Plots 
+## Indvidual Teams Function 
 ```{r}
-
-hlm_data %>% filter(!is.na(Game_Category)) %>% ggplot( aes(x = astTeam, fill = Game_Category)) + 
-  geom_density() + facet_wrap(~Game_Category, ncol = 2)
-
-hlm_data %>% filter(!is.na(Game_Category)) %>% ggplot( aes(x = trebTeam, fill = Game_Category)) + 
-  geom_density() + facet_wrap(~Game_Category, ncol = 2)
-
-hlm_data %>% filter(!is.na(Game_Category)) %>% ggplot( aes(x = tovTeam, fill = Game_Category)) + 
-  geom_density() + facet_wrap(~Game_Category, ncol = 2)
-
-hlm_data %>% filter(!is.na(Game_Category)) %>% ggplot( aes(x = pctFGTeam, fill = Game_Category)) + 
-  geom_density() + facet_wrap(~Game_Category, ncol = 2)
-
-hlm_data %>% filter(!is.na(Game_Category)) %>% ggplot( aes(x = pctFTTeam, fill = Game_Category)) + 
-  geom_density() + facet_wrap(~Game_Category, ncol = 2)
-
-hlm_data %>% filter(!is.na(Game_Category)) %>% ggplot( aes(x = pass_vol, fill = Game_Category)) + 
-  geom_density() + facet_wrap(~Game_Category, ncol = 2)
-
-hlm_data %>% filter(!is.na(Game_Category)) %>% ggplot( aes(x = plusminusTeam, fill = Game_Category)) + 
-  geom_density() + facet_wrap(~Game_Category, ncol = 2)
 
 ```
 # Indiviual Teams Five Factors Variability (<.2) (Low)
 
-This chunk groups the data by each team and calculates the mean, median, standard deviation, and IQR of the all 7 varibles 
+This chunk groups the data by each team and calculates the mean, median, standard deviation, and IQR of the all 7 variables 
 ```{r}
 
-hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-      AvgAst = mean(astTeam, na.rm = TRUE), 
-      AvgReb = mean(trebTeam, na.rm = TRUE), 
-      AvgTov = mean(tovTeam, na.rm = TRUE), 
-      AvgFG = mean(pctFGTeam, na.rm = TRUE), 
-      AvgFT = mean(pctFTTeam, na.rm = TRUE), 
-      AvgTotCen = mean(tot_deg_cent, na.rm = TRUE),
-      AvgPassVol = mean(pass_vol, na.rm = TRUE ),
-      AvgPlusMinus = mean(plusminusTeam, na.rm = TRUE))
+GameCategory_Low_Descriptives <- function(metric, year){ 
+  
+   if(metric == "sd"){
+         hlm_data %>% filter(yearSeason %in% year) %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_NAME, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(sd, na.rm = TRUE) 
+   }
+   
+    else if(metric == "median"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_NAME, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(median, na.rm = TRUE)
+    }
+   
+   else if(metric == "IQR"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_NAME, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(IQR, na.rm = TRUE) 
+   }
+   
+   else if (metric == "mean"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_NAME, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(mean, na.rm = TRUE) 
+   }
+   
+ }
 
-hlm_data  %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-      MedianAst = median(astTeam, na.rm = TRUE),               
-      MedianReb = median(trebTeam, na.rm = TRUE), 
-      MedianTov = median(tovTeam, na.rm = TRUE), 
-      MedianFG = median(pctFGTeam, na.rm = TRUE), 
-      MedianFT = median(pctFTTeam, na.rm = TRUE), 
-      MedianTotCen = median(tot_deg_cent, na.rm = TRUE),
-      MedianPassVol = median(pass_vol, na.rm = TRUE ),
-      MedianPlusMinus = median(plusminusTeam, na.rm = TRUE))
-
-hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-      StandardDevAst = sd(astTeam, na.rm = TRUE),                             StandardDevReb = sd(trebTeam, na.rm = TRUE), 
-      StandardDevTov = sd(tovTeam, na.rm = TRUE),                             StandardDevFG = sd(pctFGTeam, na.rm = TRUE), 
-      StandardDevFT = sd(pctFTTeam, na.rm = TRUE),                            StandardDevTotCen = sd(tot_deg_cent, na.rm = TRUE),
-      StandardDevPassVol = sd(pass_vol, na.rm = TRUE ),
-      StandardDevPLusMinus = sd(plusminusTeam, na.rm = TRUE))
-      
-hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-      IQRAst = IQR(astTeam, na.rm = TRUE),                            
-      IQRReb = sd(trebTeam, na.rm = TRUE), 
-      IQRTov = IQR(tovTeam, na.rm = TRUE), 
-      IQRFG = IQR(pctFGTeam, na.rm = TRUE), 
-      IQRFT = IQR(pctFTTeam, na.rm = TRUE), 
-      IQRTotCen = IQR(tot_deg_cent, na.rm = TRUE),
-      IQRPassVol = IQR(pass_vol, na.rm = TRUE ),
-      IQRPlusMinus = IQR(plusminusTeam, na.rm = TRUE))
+GameCategory_Low_Descriptives(metric = "mean", year = c(2014, 2015))
 
 ```
 ## Histograms
@@ -228,75 +152,30 @@ hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplo
   geom_histogram() + facet_wrap(~TEAM_ABBREVIATION)
 
 ```
-Cleveland, clippers, OKC, toronto, portland (turnover gap in graphs)
-
-
-## Density Plots 
-```{r}
-
-hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = astTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = trebTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = tovTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = pctFGTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x =pctFTTeam )) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = pass_vol)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = plusminusTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-```
-Follow up on this in the future (look at it across years and coaches)
-
 # Indiviual Teams Five Factors Variability (<.4 and >.2) (Mid)
 ```{r}
 
-hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-      AvgAst = mean(astTeam, na.rm = TRUE), 
-      AvgReb = mean(trebTeam, na.rm = TRUE), 
-      AvgTov = mean(tovTeam, na.rm = TRUE), 
-      AvgFG = mean(pctFGTeam, na.rm = TRUE), 
-      AvgFT = mean(pctFTTeam, na.rm = TRUE), 
-      AvgTotCen = mean(tot_deg_cent, na.rm = TRUE),
-      AvgPassVol = mean(pass_vol, na.rm = TRUE ),
-      AvgPlusMinus = mean(plusminusTeam, na.rm = TRUE))
+GameCategory_Mid_Descriptives <- function(metric, year){ 
+  
+   if(metric == "sd"){
+         hlm_data %>% filter(yearSeason %in% year) %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_NAME, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(sd, na.rm = TRUE) 
+   }
+   
+    else if(metric == "median"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_NAME, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(median, na.rm = TRUE)
+    }
+   
+   else if(metric == "IQR"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_NAME, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(IQR, na.rm = TRUE) 
+   }
+   
+   else if (metric == "mean"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_NAME, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(mean, na.rm = TRUE) 
+   }
+   
+ }
 
-hlm_data  %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-      MedianAst = median(astTeam, na.rm = TRUE),               
-      MedianReb = median(trebTeam, na.rm = TRUE), 
-      MedianTov = median(tovTeam, na.rm = TRUE), 
-      MedianFG = median(pctFGTeam, na.rm = TRUE), 
-      MedianFT = median(pctFTTeam, na.rm = TRUE), 
-      MedianTotCen = median(tot_deg_cent, na.rm = TRUE),
-      MedianPassVol = median(pass_vol, na.rm = TRUE ),
-      MedianPlusMinus = median(plusminusTeam, na.rm = TRUE))
-
-hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-      StandardDevAst = sd(astTeam, na.rm = TRUE),                             StandardDevReb = sd(trebTeam, na.rm = TRUE), 
-      StandardDevTov = sd(tovTeam, na.rm = TRUE),                             StandardDevFG = sd(pctFGTeam, na.rm = TRUE), 
-      StandardDevFT = sd(pctFTTeam, na.rm = TRUE),                            StandardDevTotCen = sd(tot_deg_cent, na.rm = TRUE),
-      StandardDevPassVol = sd(pass_vol, na.rm = TRUE ),
-      StandardDevPLusMinus = sd(plusminusTeam, na.rm = TRUE))
-
-hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-      IQRAst = IQR(astTeam, na.rm = TRUE),                            
-      IQRReb = sd(trebTeam, na.rm = TRUE), 
-      IQRTov = IQR(tovTeam, na.rm = TRUE), 
-      IQRFG = IQR(pctFGTeam, na.rm = TRUE), 
-      IQRFT = IQR(pctFTTeam, na.rm = TRUE), 
-      IQRTotCen = IQR(tot_deg_cent, na.rm = TRUE),
-      IQRPassVol = IQR(pass_vol, na.rm = TRUE),
-      IQRPlusMinus = IQR(plusminusTeam, na.rm = TRUE))
+GameCategory_Mid_Descriptives(metric = "mean", year = c(2014, 2015))
 
 ```
 ## Histograms 
@@ -322,72 +201,32 @@ hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_ABB
 
 hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = plusminusTeam)) +
   geom_histogram() + facet_wrap(~TEAM_ABBREVIATION)
-
-```
-## Density Plots
-```{r}
-
-hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = astTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = trebTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = tovTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = pctFGTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x =pctFTTeam )) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = pass_vol)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = plusminusTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
 
 ```
 # Individual Teams Five Factors Variability (>.4) (High)
 ```{r}
 
-hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-      AvgAst = mean(astTeam, na.rm = TRUE), 
-      AvgReb = mean(trebTeam, na.rm = TRUE), 
-      AvgTov = mean(tovTeam, na.rm = TRUE), 
-      AvgFG = mean(pctFGTeam, na.rm = TRUE), 
-      AvgFT = mean(pctFTTeam, na.rm = TRUE), 
-      AvgTotCen = mean(tot_deg_cent, na.rm = TRUE),
-      AvgPassVol = mean(pass_vol, na.rm = TRUE ),
-      AvgPlusMinus = mean(plusminusTeam, na.rm = TRUE))
+GameCategory_High_Descriptives <- function(metric, year){ 
+  
+   if(metric == "sd"){
+         hlm_data %>% filter(yearSeason %in% year) %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_NAME, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(sd, na.rm = TRUE) 
+   }
+   
+    else if(metric == "median"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_NAME, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(median, na.rm = TRUE)
+    }
+   
+   else if(metric == "IQR"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_NAME, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(IQR, na.rm = TRUE) 
+   }
+   
+   else if (metric == "mean"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_NAME, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(mean, na.rm = TRUE) 
+   }
+   
+ }
 
-hlm_data  %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-      MedianAst = median(astTeam, na.rm = TRUE),               
-      MedianReb = median(trebTeam, na.rm = TRUE), 
-      MedianTov = median(tovTeam, na.rm = TRUE), 
-      MedianFG = mean(pctFGTeam, na.rm = TRUE), 
-      MedianFT = median(pctFTTeam, na.rm = TRUE), 
-      MedianTotCen = median(tot_deg_cent, na.rm = TRUE),
-      MedianPassVol = median(pass_vol, na.rm = TRUE),
-      MedianPlusMinus = median(plusminusTeam, na.rm = TRUE))
-
-hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-      StandardDevAst = sd(astTeam, na.rm = TRUE),                             StandardDevReb = sd(trebTeam, na.rm = TRUE), 
-      StandardDevTov = sd(tovTeam, na.rm = TRUE),                             StandardDevFG = sd(pctFGTeam, na.rm = TRUE), 
-      StandardDevFT = sd(pctFTTeam, na.rm = TRUE),                            StandardDevTotCen = sd(tot_deg_cent, na.rm = TRUE),
-      StandardDevPassVol = sd(pass_vol, na.rm = TRUE ),
-      StandardDevPLusMinus = sd(plusminusTeam, na.rm = TRUE))
-
-hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise(
-      IQRAst = IQR(astTeam, na.rm = TRUE),                            
-      IQRReb = sd(trebTeam, na.rm = TRUE), 
-      IQRTov = IQR(tovTeam, na.rm = TRUE), 
-      IQRFG = IQR(pctFGTeam, na.rm = TRUE), 
-      IQRFT = IQR(pctFTTeam, na.rm = TRUE), 
-      IQRTotCen = IQR(tot_deg_cent, na.rm = TRUE),
-      IQRPassVol = IQR(pass_vol, na.rm = TRUE),
-      IQRPlusMinus = IQR(plusminusTeam, na.rm = TRUE))
+GameCategory_High_Descriptives(metric = "mean", year = c(2014, 2015))
 
 ```
 ## Histograms
@@ -413,31 +252,6 @@ hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_ABBREVIATION) %>% ggplo
 
 hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = plusminusTeam)) +
   geom_histogram() + facet_wrap(~TEAM_ABBREVIATION)
-
-```
-## Density Plots
-```{r}
-
-hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = astTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = trebTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = tovTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = pctFGTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x =pctFTTeam )) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = pass_vol)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
-
-hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = plusminusTeam)) +
-  geom_density() + facet_wrap(~TEAM_ABBREVIATION)
 
 ```
 3) Describe (minimum, maximum, median, mean, 25th percentile and 75th percentile) of the degree centralization for all of the data
@@ -456,31 +270,12 @@ hlm_data %>% select(tot_deg_cent) %>% summarise(
     Mean = mean(tot_deg_cent, na.rm = TRUE), 
     Median = median(tot_deg_cent, na.rm = TRUE))
 
-hlm_data %>% select(tot_deg_cent) %>% summarise( Sum = fivenum(tot_deg_cent, na.rm = TRUE))
+hlm_data %>% select(tot_deg_cent) %>% summarise(Sum = fivenum(tot_deg_cent, na.rm = TRUE))
 
 ```
 #Games that don't have centralization
 ```{r}
 hlm_data %>% filter(tot_deg_cent < .01)
-```
-4) Box plot
-```{r}
-ggplot(data = hlm_data, mapping = aes(x = tot_deg_cent, y = TEAM_ABBREVIATION)) + 
-  geom_boxplot() 
-```
-5) Histogram
-```{r}
- hlm_data %>% filter(!is.na(Game_Category)) %>% ggplot( aes(x = astTeam, fill = Game_Category)) + 
-  geom_histogram() + facet_wrap(~Game_Category, ncol = 2)
-```
-## Box Plot Example 
-```{r}
-hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_NAME) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent) %>% ggplot( aes(x = pctFGTeam)) + geom_boxplot() 
-```
-## Testing Area 
-
-```{r}
-
 ```
 ## Turnover gap in graphs)
 ```{r}
@@ -497,34 +292,30 @@ hlm_data %>% filter(!is.na(Game_Category)) %>% count(Game_Category, tovTeam)
 print(hlm_data)
 
 ```
-## Weird Graph Teams
-Cleveland, clippers, OKC, toronto, portland (turnover gap in graphs)
-
-OKC: Low: 19 games, Mid: 317 , High: 70
-CLE: Low: 27 games, Mid: 342 , High: 40
+## Testing Area 
 ```{r}
 
-hlm_data %>% filter(tot_deg_cent < .2) %>% group_by(TEAM_NAME) %>% filter(TEAM_ABBREVIATION == "SAS") %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent) 
+GameCategory_Team_Descriptives <- function(metric, team){ 
+  
+   if(metric == "sd"){
+         hlm_data %>% group_by(TEAM_ABBREVIATION, Game_Category) %>% filter(TEAM_ABBREVIATION == team) %>% group_by(Game_Category) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(sd, na.rm = TRUE) 
+   }
+   
+    else if(metric == "median"){
+         hlm_data %>% group_by(TEAM_ABBREVIATION, Game_Category) %>% filter(TEAM_ABBREVIATION == team) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(median, na.rm = TRUE)
+    }
+   
+   else if(metric == "IQR"){
+         hlm_data %>% group_by(TEAM_ABBREVIATION, Game_Category) %>% filter(TEAM_ABBREVIATION == team) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(IQR, na.rm = TRUE) 
+   }
+   
+   else if (metric == "mean"){
+         hlm_data %>% group_by(TEAM_ABBREVIATION, Game_Category) %>% filter(TEAM_ABBREVIATION == team) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(mean, na.rm = TRUE) 
+   }
+   
+ }
 
-hlm_data %>% filter(tot_deg_cent > .4) %>% group_by(TEAM_NAME) %>% filter(TEAM_ABBREVIATION == "SAS") %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent) 
-
-hlm_data %>% filter(tot_deg_cent < .4 & tot_deg_cent > .2) %>% group_by(TEAM_NAME) %>% filter(TEAM_ABBREVIATION == "SAS") %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent) 
+Team_Descriptives(metric = "sd", team = "ATL")
 
 ```
-## Coach Code 
-```{r}
-
-hlm_data <- hlm_data %>% group_by(Coach)
-  mutate(Coach_Category = case_when(tot_deg_cent >= .295 ~ "High",
-                     tot_deg_cent <= .295  & tot_deg_cent >= .26 ~"Mid",
-                               tot_deg_cent <= .26 ~ "Low"))  %>% 
-
-hlm_data %>% group_by(Coach_Category) %>% select(outcomeGame, Coach) %>% filter(outcomeGame == "L")
-
-```
-Questions
-
-Label the teams and then compare them
-work on r markdown style 
-
 

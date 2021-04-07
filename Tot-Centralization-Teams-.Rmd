@@ -1,0 +1,143 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Libraries 
+```{r}
+library(tidyverse)
+library(data.table)
+library(lubridate)
+library(readxl)
+```
+# Data
+```{r}
+hlm_data <- fread("~/Downloads/nba_long_nets_ready_for_hlm_2.csv")
+```
+# Entire League Function
+```{r}
+
+ League_Descriptives <- function(metric, year){ 
+  
+   if(metric == "sd"){
+         hlm_data %>% filter(yearSeason %in% year) %>% group_by(slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(sd, na.rm = TRUE) 
+   }
+   
+    else if(metric == "median"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% group_by(slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(median, na.rm = TRUE)
+    }
+   
+   else if(metric == "IQR"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% group_by(slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(IQR, na.rm = TRUE) 
+   }
+   
+   else if (metric == "mean"){
+         hlm_data  %>% filter(yearSeason %in% year) %>% group_by(slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(mean, na.rm = TRUE) 
+   }
+   
+ }
+
+League_Descriptives(metric = "IQR", year = c(2014, 2015))
+
+```
+# All Teams
+```{r}
+
+ All_Teams_Descriptives <- function(metric, year){ 
+  
+   if(metric == "sd"){
+         hlm_data %>% filter(yearSeason %in% year) %>% group_by(TEAM_ABBREVIATION, slugSeason)  %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(sd, na.rm = TRUE) 
+   }
+   
+    else if(metric == "median"){
+         hlm_data %>% filter(yearSeason %in% year) %>% group_by(TEAM_ABBREVIATION, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(median, na.rm = TRUE)
+    }
+   
+   else if(metric == "IQR"){
+         hlm_data %>% filter(yearSeason %in% year) %>% group_by(TEAM_ABBREVIATION, slugSeason) %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(IQR, na.rm = TRUE) 
+   }
+   
+   else if (metric == "mean"){
+         hlm_data %>% filter(yearSeason %in% year) %>% group_by(TEAM_ABBREVIATION, slugSeason)  %>% select(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam) %>% summarise_all(mean, na.rm = TRUE) 
+   }
+   
+ }
+
+ All_Teams_Descriptives(metric = "IQR", year = c(2014, 2015))
+
+```
+# Individual Team Function
+```{r}
+
+ Individual_Team_Descriptives <- function(metric, team, year){ 
+  
+
+     if(metric == "sd"){
+         hlm_data %>% filter(TEAM_ABBREVIATION %in% team) %>% filter(yearSeason %in% year) %>% group_by(TEAM_ABBREVIATION, slugSeason)  %>%  summarise_at(vars(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam), funs(sd), na.rm = TRUE) 
+    }
+   
+    else if(metric == "median"){
+         hlm_data %>% filter(TEAM_ABBREVIATION %in% team) %>% filter(yearSeason %in% year) %>% group_by(TEAM_ABBREVIATION, slugSeason)  %>%  summarise_at(vars(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam), funs(median), na.rm = TRUE) 
+     }
+   
+    else if(metric == "IQR"){
+        hlm_data %>% filter(TEAM_ABBREVIATION %in% team) %>% filter(yearSeason %in% year) %>% group_by(TEAM_ABBREVIATION, slugSeason)  %>%  summarise_at(vars(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam), funs(IQR), na.rm = TRUE) 
+    }
+   
+    else if (metric == "mean"){
+         hlm_data %>% filter(TEAM_ABBREVIATION %in% team) %>% filter(yearSeason %in% year) %>% group_by(TEAM_ABBREVIATION, slugSeason)  %>%  summarise_at(vars(astTeam, trebTeam, tovTeam, pctFGTeam, pctFTTeam, tot_deg_cent, pass_vol, plusminusTeam), funs(mean), na.rm = TRUE) 
+    }
+   
+ }
+
+Individual_Team_Descriptives(metric = "mean", team = c("ATL", "BOS"), year = c(2014, 2015, 2016))
+
+```
+# Outcome of Games
+Highest Win Percentage: Golden State
+Lowest Win Percentage: Los Angeles Lakers 
+```{r}
+
+hlm_data %>% group_by(TEAM_ABBREVIATION, outcomeGame) %>% count() %>% group_by(TEAM_ABBREVIATION) %>% mutate(percentage = n/sum(n))
+
+```
+# Outcome of Games By Season
+```{r}
+
+hlm_data %>% group_by(TEAM_ABBREVIATION, outcomeGame, slugSeason) %>% count() %>% group_by(TEAM_ABBREVIATION) %>% mutate(percentage = n/sum(n))
+
+```
+# Histograms 
+```{r}
+
+hlm_data %>% group_by(TEAM_ABBREVIATION, slugSeason) %>% ggplot(aes(x = astTeam)) +
+  geom_histogram() + facet_wrap(~TEAM_ABBREVIATION)
+
+hlm_data %>%  group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = trebTeam)) +
+  geom_histogram() + facet_wrap(~TEAM_ABBREVIATION)
+
+hlm_data %>%  group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = tovTeam)) +
+  geom_histogram() + facet_wrap(~TEAM_ABBREVIATION)
+
+hlm_data %>%  group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = pctFGTeam)) +
+  geom_histogram() + facet_wrap(~TEAM_ABBREVIATION)
+
+hlm_data %>%  group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x =pctFTTeam )) +
+  geom_histogram() + facet_wrap(~TEAM_ABBREVIATION)
+
+hlm_data %>%  group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = pass_vol)) +
+  geom_histogram() + facet_wrap(~TEAM_ABBREVIATION)
+
+hlm_data %>%  group_by(TEAM_ABBREVIATION) %>% ggplot(aes(x = plusminusTeam)) +
+  geom_histogram() + facet_wrap(~TEAM_ABBREVIATION)
+
+```
+## Summary 
+
+Over this five year span the Golden State Warriors averages the most assists at 27.868 with an average total degree centralization of 0.255. During this time the Warriors also had the highest win percentage of 0.771 by winning 316 out 410 games. The San Antonio Spurs had the highest average pass volume at 652.89 with an average total degree centralization of 0.256. Their win percentage was 0.712, winning 292 out of 410 games. The Oklahoma City Thunder (OKC) had the highest average total degree centralization at 0.329. OKCs win percentage over this time was 0.619, winning 254 out of 410 games. OKC also had the lowest average pass volume at 519.685. The Philadelphia 76ers had the lowest average total degree centralization at 0.232 with a win percentage of 0.310, winning 127 games out of 410. The Los Angeles Lakers had the lowest win percentage of 0.307, winning 126 out of 410 games. Their average total degree centralization was 0.279.
+
+# Test Area
+```{r}
+
+
+```
