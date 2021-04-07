@@ -1,0 +1,150 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+devtools::install_github("abresler/nbastatR")
+
+```{r}
+library(devtools)
+library(tidyverse)
+library(lubridate)
+library(rvest)
+```
+
+```{r}
+library(nbastatR)
+```
+
+
+```{r}
+assign_nba_players()
+
+NBA_player_list <- df_dict_nba_players
+
+NBA_player_list <- NBA_player_list %>% filter(yearSeasonLast > 2013)
+
+duplicate_names <- data.frame(table(NBA_player_list$namePlayer))
+
+
+duplicate_names[duplicate_names$Freq > 1,]
+```
+
+
+```{r}
+currently_active <- function(startYear, endYear){
+  NBA_player_list %>% 
+    filter(yearSeasonFirst < startYear & yearSeasonLast > startYear) 
+    
+}
+```
+
+
+```{r}
+currently_active(2014, 2018)
+```
+
+#create loop to make urls for all the players
+
+#https://www.basketball-reference.com/players/ (firstletterlastname) / (lastname)(firsttwolettersfirstname)01
+```{r}
+URl_player_list <- function(){
+
+  temp_URL_list <- list()
+  
+  for (k in 1:nrow(NBA_player_list)) {
+     temp_name = NBA_player_list[k, 3]
+     temp_last <- sub(".* ", "", temp_name)
+     if(temp_last == "Jr."){
+       temp_name <- substring(temp_name, 1, nchar(temp_name) - 4)
+       temp_last <- NULL
+       temp_last <- sub(".* ", "", temp_name)
+     }
+     temp_URL_list[k] <- paste0("https://www.basketball-reference.com/players/", tolower(substr(temp_last, 1, 1)), "/", tolower(substr(temp_last, 1, 5)), tolower(substr(temp_name, 1, 2)), "01.html")
+  }
+  return(temp_URL_list)
+}
+```
+
+
+
+```{r}
+URL_list_NBA_players <- URl_player_list()
+
+URL_list_NBA_players[[175]]
+
+NBA_player_list[[2, 3]]
+
+
+whole <- NBA_player_list[176, 3]
+whole
+last_name <- sub(".* ", "", whole)
+if(last_name == "Jr."){
+  whole <- substring(whole, 1, nchar(whole) - 4)
+  last_name <- sub(".* ", "", whole)
+  last_name
+}
+whole
+sub(".* ", "", whole)
+substr(last_name, 1, 1)
+
+
+paste0("https://www.basketball-reference.com/players/", tolower(substr(last_name, 1, 1)), "/", tolower(substr(last_name, 1, 5)), tolower(substr(whole, 1, 2)), "01.html")
+```
+
+https://www.basketball-reference.com/players/n/naderab01.html
+
+https://www.basketball-reference.com/players/c/capelca01.html
+
+
+
+#Giannis Antetokounmpo games missed by season total
+```{r}
+Gannis_URL_BR <- URL_list_NBA_players[[35]]
+Giannis_Table <- data.frame()
+Giannis_Table <- Gannis_URL_BR %>% read_html() %>%
+    html_nodes(css =  "#per_game") %>% html_table()
+
+Giannis_Table_games <- Giannis_Table[6]
+Giannis_Table_Season <- Giannis_Table[1]
+Giannis_Table[,1]
+for (k in 1:nrow(Giannis_Table_games)) {
+  if(k == nrow(Giannis_Table_games)){
+    print(paste0("Giannis has played ", as.numeric(Giannis_Table_games[k,1]), " games in his carrer"))
+  }
+  else if(k == nrow(Giannis_Table_games) - 1){
+     print("Current season")
+  }
+  else{
+    games_missed <- 82 - as.numeric(Giannis_Table_games[k,1])
+    print(paste0("Giannis missed ", games_missed, " during the ", Giannis_Table_Season[k,1], " Season"))
+  }
+}
+
+```
+
+#Giannis Antetokounmpo games missed by individual games
+```{r}
+Gannis_URL_games_missed <- "https://www.basketball-reference.com/players/a/antetgi01/gamelog/2014/"
+
+Gannis_URL_games_missed %>% read_html() %>%
+  html_nodes(css = "#pgl_basic") %>% html_table() 
+games_missed_2013_2014
+games_not_played <- NULL
+counter = 1
+for (r in 1:nrow(games_missed_2013_2014[[1]])) {
+  if(games_missed_2013_2014[[1]][r,9] == "Did Not Play"){
+    games_not_played[counter] <- games_missed_2013_2014[[1]][r,1]
+    counter = counter + 1
+  }
+}
+for (j in nrow(games_not_played)) {
+  
+}
+print(paste0("Giannis missed game number ", games_not_played , " during the 2013-2014 season"))
+games_not_played
+```
+
+
+

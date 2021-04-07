@@ -8,7 +8,7 @@ output:
 
 
 # Libraries
-```{r}
+```{r warning=FALSE}
 library(tidyverse)
 library(data.table)
 library(lubridate)
@@ -44,12 +44,13 @@ hlm_data %>% group_by(Coach) %>%
 > Golden State and San Antonio Spurs have lower centralizations than the other super star teams giving them a higher win percentage. 
 > There seems to be no real correlation between centralization and win percentage.
 
+> Coaches with lower mean_centralization have higher win pct but coaches that have not that many games usually have low win pct even with low mean_centralization. It does vary alot by coach. I think star players have a big impact on these coaches. 
 
 ```{r}
-hlm_data %>% group_by(Coach, Coach_Category) %>%
+hlm_data %>% group_by(Coach) %>%
   mutate(mean_centralization = mean(tot_deg_cent)) %>%
-  group_by(Coach, outcomeGame, mean_centralization, Coach_Category) %>% tally() %>% group_by(Coach) %>% mutate(win_pct = n/sum(n)) %>% filter(outcomeGame == "W") %>%
-  ggplot(aes(x = mean_centralization, y = win_pct, color = Coach_Category))+ geom_smooth(method = "lm")
+  group_by(Coach, outcomeGame, mean_centralization) %>% tally() %>% group_by(Coach) %>% mutate(win_pct = n/sum(n)) %>% filter(outcomeGame == "W") %>%
+  ggplot(aes(x = mean_centralization, y = win_pct, color = outcomeGame))+ geom_smooth()
 ```
 
 ```{r}
@@ -112,7 +113,7 @@ hlm_data %>% group_by(Coach, ptsTeam, Coach_Category) %>%
   mutate(mean_centralization = mean(tot_deg_cent)) %>%
   group_by(Coach , mean_centralization, ptsTeam, Coach_Category) %>% 
   mutate(mean_pts = mean(ptsTeam))%>% tally() %>% 
-  ggplot(aes(x = mean_centralization, y = ptsTeam, color = Coach_Category)) + geom_smooth(method = "lm")
+  ggplot(aes(x = mean_centralization, y = ptsTeam, color = Coach_Category)) + geom_smooth()
 ```
 
 
@@ -368,7 +369,16 @@ hlm_data %>% group_by(Coach, Coach_Category) %>%
 hlm_data %>% group_by(locationGame) %>% mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame) %>% tally()
 ```
 
-In the whole data set it seems like away games have a slight increase in tot_deg_cent
+In the whole data set it seems like away games have a slight increase in tot_deg_cent. There isn't much of a difference though
+
+```{r}
+hlm_data %>% group_by(locationGame, yearSeason) %>% mutate(mean_centralization = mean(tot_deg_cent)) %>% 
+  group_by(mean_centralization, locationGame, yearSeason) %>% tally() %>%
+  arrange(yearSeason)
+```
+Overall there is not much difference by year except for 2014. Still away games mostly had higher degrees of centralization
+
+
 
 > see coaches have higher levels of centralization home or away. 
 
@@ -379,6 +389,127 @@ hlm_data %>% group_by(locationGame, Coach) %>%
 ```
 
 It seems like it depends on the coach on how different there centralization are home or away. For instance Alvin Gentry has a .2739 away and .2931 home which shows some difference in centralization. Then there's Brett Brown who has a .2307 away and .2339 home which does not show much of a difference between home and away. Even more so Billy Donovan has a .3244 away and a .3282 home which shows and even less difference in centralization home or away. Overall, I see that it depends on the coach for the differences in centralization home or away. 
+
+```{r}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% arrange(Coach, yearSeason)
+```
+Adding yearseason shows more of a variance between mean_centralization. It is evident in Alvin Gentry 2017 compared to the year prior. There is some differences by coaches and years but mostly away games have higher levels of centralization especially so for all star coaches. For instance Doc Rivers has higher levels of centralization in away all years except for 16 and 17. There are bigger variations in mean centralization for coaches that coached less than 1 and a half seasons. 
+
+
+
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% filter(Coach == "Alvin Gentry") %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth()
+```
+
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% filter(Coach == "Billy Donovan") %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth()
+```
+
+Home games for Billy Donovan showed a gradual increase every season he coached but away games show little to no variance throughout the seasons very steady. This is unusual to see such a difference between home and away centralization especially shown in 2018 having home centralization higher than away
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% filter(Coach == "Tyronn Lue") %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth()
+```
+
+Tyronn Lue away games start off really high then fall and get steady after 2017 season. The home games do the opposite. Not that unusual except for the 2018 season showing a difference between home and away having home being higher in centralization. 
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% filter(Coach == "Doc Rivers") %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth()
+```
+
+This is what the usual trend looks like with away games mostly having higher centralization but not by to much of a margin. 
+
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% filter(Coach == "Frank Vogel") %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth()
+```
+
+Frank Vogel follows the trend of having higher mean centralization away than home shown in the beginning and in of the seasons coached. 
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% filter(Coach == "Gregg Popovich") %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth()
+```
+
+Gregg follows the trend the best because shown on the graph away games always had higher centralization between all seasons never crossing over. Home games always had lower centralization in every season Gregg coached in. 
+
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% filter(Coach == "Erik Spoelstra") %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth()
+```
+Erik followed the trend of away games having higher centralization except for the 2017 and 2018 season. It does not work for all seasons but for most seasons depending on the coach. 
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% filter(Coach == "Steve Kerr") %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth()
+```
+Steve Kerr follows the trend well but not as good as Gregg. Kerr had two season in the beginning that did not follow the trend of away games being higher in centralization than home games. It did follow the trend after the 2016 season.
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% filter(Coach == "Mike D'Antoni") %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth()
+```
+Mike D'Antoni follows the trend perfectly having away games always have higher centralization than home games. They never crossed each other and had increasing variance over each season. 
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% filter(Coach == "Kenny Atkinson") %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth(span = 1)
+```
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% filter(Coach == "George Karl") %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth(span = 1)
+```
+
+
+I see with coaches with two or less seasons have the opposite trend. Having home games higher in centralization than away especially shown with Kenny and George Karl. 
+
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth() + facet_wrap(~Coach)
+```
+
+The graphs that do not have graphs are mostly coaches that did not coach all four years or switched to different teams in a middle of a season. 
+
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% 
+  filter(Coach %in% c("Alvin Gentry", "Billy Donovan")) %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth() + facet_wrap(~Coach)
+```
+
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, Coach, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, Coach, yearSeason) %>% tally() %>% 
+  filter(Coach %in% c("Mike D'Antoni", "Gregg Popovich")) %>%
+  ggplot(aes(x = yearSeason , y = mean_centralization, color = locationGame)) + geom_smooth() + facet_wrap(~Coach)
+```
+
+
 
 > see teams have higher levels of centralization home or away. 
 
@@ -392,7 +523,50 @@ hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
 > not much change in centralization by year for ATL except for 2015 being .200 away and .246 home. For BKN the biggest changes were in 2017 and 2018 being .224 away 2017 and .234 home 2017, .260 away 2018 and .280 home 2018. Overall, I see that by year there is changes in centralization home or away but depends on the team and what year it is happening in. 
 
 
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, TEAM_ABBREVIATION, yearSeason) %>% tally() %>% filter(TEAM_ABBREVIATION == "ATL") %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_smooth()
+```
 
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, TEAM_ABBREVIATION, yearSeason) %>% tally() %>% filter(TEAM_ABBREVIATION == "SAS") %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_smooth()
+```
+
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, TEAM_ABBREVIATION, yearSeason) %>% tally() %>% filter(TEAM_ABBREVIATION == "MIA") %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_smooth()
+```
+
+
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, TEAM_ABBREVIATION, yearSeason) %>% tally() %>% filter(TEAM_ABBREVIATION == "HOU") %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_smooth()
+```
+
+Mike D' Antoni always had higher away centralization than home centralization shown from 2016 to 2018 before that it was two different coaches. This corresponds to the trend. 
+
+
+
+
+Overall Coaches that stay there all 4 years have the same trend for the team. When there is a coaching change 
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, TEAM_ABBREVIATION, yearSeason) %>% tally() %>% 
+  ggplot(aes(x = yearSeason, y =mean_centralization, color = locationGame)) +
+  geom_smooth() + facet_wrap(~TEAM_ABBREVIATION)
+```
 
 > note see if a team shows differences in centralization in different teams they face(group by team and oppo). 
 
@@ -425,19 +599,15 @@ mean centralization per year with error bars for away and home games
 
 > Note Whether or not are one team a reciepent of high low or mid centralizations looking at opps change in centr. 
 
-```{r}
-hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, Coach_Category) %>%
-  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, Coach_Category, slugTeam, slugOpponent, locationGame) %>% tally() %>% 
-  arrange(slugTeam, slugOpponent)
-```
-For BKN weird that there is no away mid category 
 
 ```{r}
-hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, Coach_Category, yearSeason) %>%
-  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, Coach_Category, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
   arrange(slugTeam, slugOpponent, yearSeason, locationGame)
 ```
-> not all years have mid centralization, the lows differed alot in different years playing the same opponent. It could be due to different players playing at different years. 
+
+ATl as a slug team there slug opponent BKN has higher centralization away except for 2015 this is what the usual trend is. The different seasons can change but it mostly follows it for every slug team and opponent. With always some exceptions. 
+
 
 
 ```{r}
@@ -450,40 +620,48 @@ hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
 ```
 
 
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, yearSeason, locationGame) %>% 
+  filter(slugTeam == "SAS", slugOpponent %in% c("CLE", "GSW", "BOS", "LAC")) %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_line() + facet_wrap(~slugOpponent)
+```
+
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, yearSeason, locationGame) %>% 
+  filter(slugTeam == "CLE", slugOpponent %in% c("GSW", "SAS", "BOS", "LAC") ) %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_line() + facet_wrap(~slugOpponent)
+```
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, yearSeason, locationGame) %>% 
+  filter(slugTeam == "LAC", slugOpponent %in% c("CLE", "HOU", "BOS", "GSW") ) %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_line() + facet_wrap(~slugOpponent)
+```
+
+
+
 make a graph for this 
 
 
-```{r}
-hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, Coach_Category, yearSeason) %>%
-  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, Coach_Category, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+```{r warning=FALSE, message=FALSE}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
   filter(slugTeam == "ATL") %>% ggplot(aes(x = yearSeason, y = mean_centralization, color = slugOpponent)) + geom_smooth(span = .8, se = FALSE) + facet_wrap(~ locationGame)
 ```
 
+> writing overarching summary of my finding.
 
-```{r}
-hlm_data %>% group_by(Coach, Coach_Category) %>%
-  mutate(mean_centralization = mean(tot_deg_cent)) %>%
-  group_by(Coach, locationGame, mean_centralization, Coach_Category) %>% tally() %>%
-  group_by(Coach, Coach_Category) %>% mutate(Home_pct = n/sum(n)) %>% 
-  filter(locationGame == "A") %>% 
-  ggplot(aes(x = mean_centralization, y = Home_pct, color = locationGame)) + geom_smooth(method = "lm") 
-```
-
-
-> make a graph mean centralization on x and pct on y color the line is mapped on location game 
-
-```{r}
-hlm_data %>% group_by(Coach) %>%
-  mutate(mean_centralization = mean(tot_deg_cent)) %>%
-  group_by(Coach, locationGame, mean_centralization) %>% tally() %>%
-  group_by(Coach) %>% mutate(Home_pct = n/sum(n)) %>% filter(locationGame == "A")  
-```
-
-
-
-
-
-
+add warning false and message false to every chunk
 
 ```{r}
 hlm_data 
