@@ -1,0 +1,74 @@
+
+
+
+# Libraries
+```{r warning=FALSE}
+library(tidyverse)
+library(data.table)
+library(lubridate)
+library(readxl)
+library(ggpubr)
+library(rstatix)
+```
+
+# Data
+```{r}
+hlm_data <- fread("C:\\Users\\ermin\\Downloads\\nba_long_nets_ready_for_hlm_2.csv")
+```
+
+
+> see teams have higher levels of centralization home or away. 
+
+
+
+```{r}
+hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, TEAM_ABBREVIATION, yearSeason) %>% tally() %>% arrange(TEAM_ABBREVIATION, locationGame, yearSeason)
+```
+
+> not much change in centralization by year for ATL except for 2015 being .200 away and .246 home. For BKN the biggest changes were in 2017 and 2018 being .224 away 2017 and .234 home 2017, .260 away 2018 and .280 home 2018. Overall, I see that by year there is changes in centralization home or away but depends on the team and what year it is happening in. 
+
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, TEAM_ABBREVIATION, yearSeason) %>% tally() %>% filter(TEAM_ABBREVIATION == "ATL") %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_smooth()
+```
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, TEAM_ABBREVIATION, yearSeason) %>% tally() %>% filter(TEAM_ABBREVIATION == "SAS") %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_smooth()
+```
+
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, TEAM_ABBREVIATION, yearSeason) %>% tally() %>% filter(TEAM_ABBREVIATION == "MIA") %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_smooth()
+```
+
+
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, TEAM_ABBREVIATION, yearSeason) %>% tally() %>% filter(TEAM_ABBREVIATION == "HOU") %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_smooth()
+```
+
+Mike D' Antoni always had higher away centralization than home centralization shown from 2016 to 2018 before that it was two different coaches. This corresponds to the trend. 
+
+
+Overall Coaches that stay there all 4 years have the same trend for the team. When there is a coaching change. For instance, ATL, MIA, and SAS have the same exact graph because all the coaches for those teams have been there for all 4 seasons. 
+
+```{r warning=FALSE}
+hlm_data %>% group_by(locationGame, TEAM_ABBREVIATION, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, TEAM_ABBREVIATION, yearSeason) %>% tally() %>% 
+  ggplot(aes(x = yearSeason, y =mean_centralization, color = locationGame)) +
+  geom_smooth() + facet_wrap(~TEAM_ABBREVIATION)
+```
+
