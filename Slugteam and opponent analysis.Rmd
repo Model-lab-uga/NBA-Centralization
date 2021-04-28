@@ -1,0 +1,94 @@
+
+# Libraries
+```{r warning=FALSE}
+library(tidyverse)
+library(data.table)
+library(lubridate)
+library(readxl)
+library(ggpubr)
+library(rstatix)
+```
+
+# Data
+```{r}
+hlm_data <- fread("C:\\Users\\ermin\\Downloads\\nba_long_nets_ready_for_hlm_2.csv")
+```
+
+
+
+> note see if a team shows differences in centralization in different teams they face(group by team and oppo). 
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, slugTeam, slugOpponent, yearSeason) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, locationGame) 
+```
+> I see that the slug opponent gives a lot of variance on who the slug team is play can be big changes in centralization in away games specifically or home games depending on the opponent. 
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, slugTeam, slugOpponent) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, locationGame)
+```
+>  mean centralization varying home or away depends on the opponent. For instance, BKN does not have much change home or away .2590 away and .2588 home. CHA has a lot of variance home and away .2741 away and .2082 home. This is for ATL slugTeam. 
+
+
+```{r warning=FALSE} 
+hlm_data %>% group_by(slugTeam, slugOpponent, yearSeason, locationGame) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, locationGame, slugTeam, slugOpponent, yearSeason) %>% tally() %>% 
+  filter(slugTeam == "ATL") %>% arrange(yearSeason) %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = slugOpponent)) + geom_smooth(span = .5, se = FALSE) + facet_wrap(~ locationGame)
+```
+
+There seems to be no clear trend which means that slugteam and opponent have no relationship between each other. 
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, yearSeason, locationGame)
+```
+
+ATl as a slug team there slug opponent BKN has higher centralization away except for 2015 this is what the usual trend is. The different seasons can change but it mostly follows it for every slug team and opponent. With always some exceptions. 
+
+
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, yearSeason, locationGame) %>% 
+  filter(slugTeam == "GSW", slugOpponent %in% c("CLE", "HOU", "BOS", "LAC") ) %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_line() + facet_wrap(~slugOpponent)
+```
+
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, yearSeason, locationGame) %>% 
+  filter(slugTeam == "SAS", slugOpponent %in% c("CLE", "GSW", "BOS", "LAC")) %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_line() + facet_wrap(~slugOpponent)
+```
+
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, yearSeason, locationGame) %>% 
+  filter(slugTeam == "CLE", slugOpponent %in% c("GSW", "SAS", "BOS", "LAC") ) %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_line() + facet_wrap(~slugOpponent)
+```
+
+```{r}
+hlm_data %>% group_by(locationGame, slugTeam, slugOpponent, yearSeason) %>%
+  mutate(mean_centralization = mean(tot_deg_cent)) %>% group_by(mean_centralization, slugTeam, slugOpponent, locationGame, yearSeason) %>% tally() %>% 
+  arrange(slugTeam, slugOpponent, yearSeason, locationGame) %>% 
+  filter(slugTeam == "LAC", slugOpponent %in% c("CLE", "HOU", "BOS", "GSW") ) %>%
+  ggplot(aes(x = yearSeason, y = mean_centralization, color = locationGame)) +
+  geom_line() + facet_wrap(~slugOpponent)
+```
+
+Overall, there is no clear relationship between slugteam versus different opponents. So, I think there is no relationship.
+

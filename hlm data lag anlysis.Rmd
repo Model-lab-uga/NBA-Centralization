@@ -1,0 +1,62 @@
+---
+title: "hlm data Lag Analysis"
+output: html_notebook
+---
+
+```{r}
+hlm_data <- read.csv("~/GitHub/NBA-Centralization/nba_long_nets_ready_for_hlm_2.csv")
+```
+
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(roll)
+library(ggplot2)
+```
+
+
+
+2,3,7,10,14,20
+
+
+```{r}
+ data_w_lags <- hlm_data %>% group_by(slugTeam, slugSeason) %>% 
+  mutate(lag_2 = lag(tot_deg_cent, 2), 
+         lag_3 = lag(tot_deg_cent,3), 
+         lag_7 = lag(tot_deg_cent, 7), 
+         lag_10 = lag(tot_deg_cent, 10), 
+         lag_14 = lag(tot_deg_cent, 14), 
+         lag_20 = lag(tot_deg_cent, 20), 
+         rollmean_2 = roll_mean(tot_deg_cent,2), 
+         rollmean_3 = roll_mean(tot_deg_cent, 3), 
+         rollmean_7 = roll_mean(tot_deg_cent, 7), 
+         rollmean_10 = roll_mean(tot_deg_cent, 10), 
+         rollmean_14 = roll_mean(tot_deg_cent, 14), 
+         rollmean_20 = roll_mean(tot_deg_cent, 20), 
+         sd_2 = roll_sd(tot_deg_cent, 2),
+         sd_3 = roll_sd(tot_deg_cent, 3),
+         sd_7 = roll_sd(tot_deg_cent, 7),
+         sd_10 = roll_sd(tot_deg_cent, 10), 
+         sd_14 = roll_sd(tot_deg_cent, 14), 
+         sd_20 = roll_sd(tot_deg_cent, 20))
+```
+
+```{r}
+test <- data_w_lags %>% pivot_longer(cols = contains("lag_"), names_to = c("lag", "lnum"), values_to = "lval", names_sep = "_") %>% pivot_longer(cols = contains("sd_"), names_to = c("sd", "sdnum"), values_to = "sdval", names_sep = "_") %>% pivot_longer(cols = contains("rollmean_"), names_to = c("rollmean", "meannum"), values_to = "meanval", names_sep = "_")
+save(test, file = "full_long_lags.rds")
+```
+
+```{r}
+test %>% filter(slugTeam == "OKC", slugSeason == "2014-15") %>% ggplot(aes( x = numberGameTeamSeason, y = meanval, color = meannum)) +geom_smooth(span = .2, se = FALSE)
+
+```
+
+
+
+
+
+
+
+
+
