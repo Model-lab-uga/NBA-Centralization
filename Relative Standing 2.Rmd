@@ -1,0 +1,70 @@
+---
+title: "Relative Standing"
+output: html_notebook
+---
+
+## Libraries 
+```{r}
+library(tidyverse)
+library(data.table)
+library(lubridate)
+library(readxl)
+```
+## Data 
+```{r}
+Player_data <- fread("~/Downloads/nba_pass_data_14_18_individual.csv")
+```
+## Relative standing Across the Entire League (Made)
+```{r}
+
+Player_data %>% filter(PASS_TYPE == "made") %>% group_by(slugSeason, idGame, PLAYER_ID) %>% summarise(passes = sum(PASS)) %>% mutate(Relative = scale(passes))
+
+```
+## Relative standing Across the Entire League (Received)
+```{r}
+
+Player_data %>% filter(PASS_TYPE == "received") %>% group_by(slugSeason, idGame, PLAYER_ID) %>% summarise(passes = sum(PASS)) %>% mutate(Relative = scale(passes)) %>% filter(PLAYER_ID == "1882")
+
+```
+## Relative standing within the team (Mdde)
+```{r}
+
+Player_data %>% filter(PASS_TYPE == "made") %>% group_by(TEAM_NAME, idGame, PLAYER_ID) %>% summarise(passes = sum(PASS)) %>% mutate(Relative = scale(passes)) 
+
+```
+## Relative standing within the team (Received)
+```{r}
+
+Player_data %>% filter(PASS_TYPE == "received") %>% group_by(TEAM_NAME, idGame, PLAYER_ID) %>% summarise(passes = sum(PASS)) %>% mutate(Relative = scale(passes)) %>% filter(PLAYER_ID == "1882")
+
+```
+## Relative standing within the team, by season (Made)
+```{r}
+
+Player_data %>% filter(PASS_TYPE == "made") %>% group_by(slugSeason, TEAM_NAME, idGame, PLAYER_ID) %>% summarise(passes = sum(PASS)) %>% mutate(Relative = scale(passes))
+
+```
+## Relative standing within the team, by season (Received)
+```{r}
+
+Player_data %>% filter(PASS_TYPE == "received") %>% group_by(slugSeason, TEAM_NAME, idGame, PLAYER_ID) %>% summarise(passes = sum(PASS)) %>% mutate(Relative = scale(passes))
+
+```
+## Percetage of passes for each player in each game 
+```{r}
+
+Player_data %>% group_by(slugSeason, idGame, PLAYER_ID, TEAM_NAME, TEAM_ABBREVIATION, PASS_TYPE) %>% nest() 
+
+```
+## Test Area
+```{r}
+
+summarise(passes = sum(PASS)) %>% mutate(Relative = scale(passes)) 
+  ggplot(aes(x = passes)) + geom_density()
+  
+  Player_data %>% filter(PASS_TYPE == "made") %>% count(PASS, idGame, PLAYER_ID) 
+  
+  mutate(percentage = n/sum(n))
+  
+```
+
