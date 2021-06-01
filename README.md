@@ -11,6 +11,7 @@ This project aims to explore the passing network patterns of National Basketball
 4. What are the relationships between network temporal patterns and team behavioral indicators?
 
 # Papers in progress
+## Empirical Process data
 Contributions: delinieating empirical process data and differing it from other types of data currently used in org research. Secondly, demonstrating what can be done with empirical process data (e.g. dynamic modeling, functional data analysis) and questions that can be answered with the data.
 1. Empirical process data
 * What does empirical process data look like?
