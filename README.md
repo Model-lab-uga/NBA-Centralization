@@ -19,4 +19,5 @@ Contributions: delinieating empirical process data and differing it from other t
 * How to collect empirical process data?
 2. In basketball...
 * Outcome data: performance, scores, assists, etc... all of the things that occurred due to process but not process itself.
-* In organizations: satisfaction, lmx, etc... none of this captures work but instead just captures the results that emerge from work process.
+3. In organizations...
+* satisfaction, lmx, etc... none of this captures work but instead just captures the results that emerge from work process.
