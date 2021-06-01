@@ -9,3 +9,13 @@ This project aims to explore the passing network patterns of National Basketball
   * How might collective centrality of multiple players impact team adaptation?
 3. What types of network metrics are most predictive of team success outcomes?
 4. What are the relationships between network temporal patterns and team behavioral indicators?
+
+# Papers in progress
+Contributions: delinieating empirical process data and differing it from other types of data currently used in org research. Secondly, demonstrating what can be done with empirical process data (e.g. dynamic modeling, functional data analysis) and questions that can be answered with the data.
+1. Empirical process data
+* What does empirical process data look like?
+* How does it differ from empirical outcome data? or other types of process data (e.g. several snapshots of reflections of teamwork)?
+* How to collect empirical process data?
+2. In basketball...
+* Outcome data: performance, scores, assists, etc... all of the things that occurred due to process but not process itself.
+* In organizations: satisfaction, lmx, etc... none of this captures work but instead just captures the results that emerge from work process.
