@@ -1,0 +1,43 @@
+---
+title: "NBA Time-Series Descriptives"
+output: html_notebook
+---
+
+# Libraries
+```{r}
+library(tidyverse)
+library(data.table)
+library(fpp3)
+lag_data <- read_rds("/Users/Neal/Documents/GitHub/NBA-Centralization/team_w_lags.rds")
+```
+
+
+```{r}
+lag_data %>% ungroup() %>% 
+  filter(TEAM_ABBREVIATION == "ATL", !is.na(tot_deg_cent)) %>%
+  arrange(slugSeason, numberGameTeamSeason) %>%
+  as_tsibble(key = c(slugSeason, TEAM_ABBREVIATION), index = c(numberGameTeamSeason)) %>% fill_gaps(.full = TRUE) %>%
+  ACF(tot_deg_cent) %>%
+  autoplot()
+```
+
+
+
+
+
+## Time-series charts
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
