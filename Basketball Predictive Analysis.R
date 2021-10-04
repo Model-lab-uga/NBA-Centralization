@@ -4,7 +4,7 @@ load("gameDat.RData")
 trainDat <- gameDat3[1:151,]
 
 ## Estimate 4 factor model
-trainMod<- lm(ptDif ~ cEFG + cTOV + cORB + cFTFGA, trainDat)
+trainMod <- lm(ptDif ~ cEFG + cTOV + cORB + cFTFGA, trainDat)
 summary(trainMod)
 trainDat$fitted <- as.numeric(fitted(trainMod))
 
