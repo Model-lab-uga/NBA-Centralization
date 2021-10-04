@@ -1,0 +1,55 @@
+### This file provides links to free online textbooks on various topics.
+
+## Time Series Analysis
+
+Forecasting: Principles and Practice
+
+https://otexts.com/fpp3/
+
+Introductory Time Series with R
+
+https://nwfsc-timeseries.github.io/atsa/Files/Introductory_Time_Series_With_R.pdf
+
+## Writing Web Pages, Journal Articles, and Online Books
+
+# R Markdown
+
+Definitive Guide:
+
+https://bookdown.org/yihui/rmarkdown/
+
+Cookbook:
+
+https://bookdown.org/yihui/rmarkdown-cookbook/
+
+# APA manuscripts
+
+papaja R package
+
+http://frederikaust.com/papaja_man/
+
+# Authoring Books and Technical Documents
+
+bookdown R package
+
+https://bookdown.org/yihui/bookdown/
+
+# Websites
+
+blogdown R package
+
+https://bookdown.org/yihui/blogdown/
+
+## R for Data Science
+
+https://r4ds.had.co.nz/index.html
+
+## Advanced R
+
+# Get to know R programming more thoroughly
+
+https://adv-r.hadley.nz
+
+## Integrating R and Git
+
+https://happygitwithr.com
