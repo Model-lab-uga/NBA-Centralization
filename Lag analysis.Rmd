@@ -1,0 +1,534 @@
+---
+title: "NBA time-series 16-30"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(data.table)
+library(fpp3)
+lag_data <- read_rds("/Users/diede/OneDrive/Documents/GitHub/NBA-Centralization/team_w_lags.rds")
+```
+
+
+```{r}
+team_lag_graphs <- function(team_abrev){
+  lag_data %>% ungroup() %>%
+  filter(TEAM_ABBREVIATION == team_abrev, !is.na(tot_deg_cent)) %>%
+  arrange(slugSeason, numberGameTeamSeason) %>%
+  as_tsibble(key = c(slugSeason, TEAM_ABBREVIATION), index = c(numberGameTeamSeason)) %>%
+  fill_gaps(.full = TRUE) %>%
+  ACF(tot_deg_cent) %>%
+  autoplot()
+}
+```
+
+
+
+```{r}
+relevant_team_lags <- function(team_abrev){
+  important_ACF_values <- data.frame()
+  team_temp_chart <- lag_data %>% ungroup() %>%
+    filter(TEAM_ABBREVIATION == team_abrev, !is.na(tot_deg_cent)) %>%
+    arrange(slugSeason, numberGameTeamSeason) %>%
+    as_tsibble(key = c(slugSeason, TEAM_ABBREVIATION), index = c(numberGameTeamSeason)) %>%
+    fill_gaps(.full = TRUE) %>%
+    ACF(tot_deg_cent) 
+      
+  counter = 1
+  for (i in 1:nrow(team_temp_chart[,4])) {
+    if(team_temp_chart[[i,4]] > .2 | team_temp_chart[[i,4]] < (-.2)) {
+      for (k in 1:ncol(team_temp_chart[1,])) {
+        important_ACF_values[counter,k] <- team_temp_chart[i,k]
+      }
+      counter = counter + 1
+    }
+  }
+  return(important_ACF_values)
+}
+```
+
+```{r}
+relevant_team_lags("WAS")
+```
+
+
+#Top and botton team lag analysis 13-14 season
+```{r}
+#top teams
+relevant_team_lags("SAS")
+relevant_team_lags("OKC")
+relevant_team_lags("LAC")
+relevant_team_lags("IND")
+relevant_team_lags("HOU")
+relevant_team_lags("MIA")
+relevant_team_lags("POR")
+relevant_team_lags("GSW")
+relevant_team_lags("MEM")
+relevant_team_lags("DAL")
+
+#Bottom teams
+relevant_team_lags("NOP")
+relevant_team_lags("CLE")
+relevant_team_lags("DET")
+relevant_team_lags("SAC")
+relevant_team_lags("LAL")
+relevant_team_lags("BOS")
+relevant_team_lags("UTA")
+relevant_team_lags("ORL")
+relevant_team_lags("PHI")
+relevant_team_lags("MIL")
+```
+#Top and botton team lag analysis 13-14 season
+Place  |    Team    |   Lags    |
+  1         SAS         5
+  2         OKC         -
+  3         LAC         1
+  4         IND         -
+  5         HOU         -
+  6         MIA         1,6,7,9,10,14,16
+  7         POR         -
+  8         GSW         5
+  9         MEM         2,10
+  10        DAL         4
+Place  |    Team    |   Lags    |
+  21        NOP         16
+  22        CLE         4,8
+  23        DET         -
+  24        SAC         N/A
+  25        LAL         2
+  26        BOS         -
+  27        UTA         12
+  28        ORL         1
+  29        PHI         12
+  30        MIL         2,12
+  
+-San Antonio Won title
+-4/10 teams were unpredictable of the teams with the 10 best records
+-6/9 teams were unpredictable of rhe teams with the 9 worst records
+
+######################################################################
+
+#Top and botton team lag analysis 14-15 season
+```{r}
+#top teams
+relevant_team_lags("GSW")
+relevant_team_lags("ATL")
+relevant_team_lags("HOU")
+relevant_team_lags("LAC")
+relevant_team_lags("MEM")
+relevant_team_lags("SAS")
+relevant_team_lags("CLE")
+relevant_team_lags("POR")
+relevant_team_lags("CHI")
+relevant_team_lags("DAL")
+
+#Bottom teams
+relevant_team_lags("MIA")
+relevant_team_lags("CHA")
+relevant_team_lags("DET")
+relevant_team_lags("DEN")
+relevant_team_lags("SAC")
+relevant_team_lags("ORL")
+relevant_team_lags("LAL")
+relevant_team_lags("PHI")
+relevant_team_lags("NYK")
+relevant_team_lags("MIN")
+```
+#Top and botton team lag analysis 13-14 season
+Place  |    Team    |   Lags    |
+  1         GSW         -
+  2         ATL         4,17
+  3         HOU         16
+  4         LAC         -
+  5         MEM         -
+  6         SAS         2
+  7         CLE         -
+  8         POR         3,10
+  9         CHi         -
+  10        DAL         6,7,19
+Place  |    Team    |   Lags    |
+  21        MIA         13,16
+  22        CHA         -
+  23        DET         4
+  24        DEN         12
+  25        SAC         N/A
+  26        ORL         5,12
+  27        LAL         -
+  28        PHI         1,7
+  29        NYK         -
+  30        MIN         1,2,3,4,5,7,14,16
+
+-Golden State won the title
+-6/10 teams were unpredictable of the teams with the best 10 records
+-5/9 teams were unpredictable of the teams with the worst 9 records
+
+################################################################
+
+#Top and botton team lag analysis 15-16 season
+```{r}
+#top teams
+relevant_team_lags("GSW")
+relevant_team_lags("SAS")
+relevant_team_lags("CLE")
+relevant_team_lags("TOR")
+relevant_team_lags("OKC")
+relevant_team_lags("LAC")
+relevant_team_lags("ATL")
+relevant_team_lags("BOS")
+relevant_team_lags("CHA")
+relevant_team_lags("MIA")
+
+#Bottom teams
+relevant_team_lags("DEN")
+relevant_team_lags("MIL")
+relevant_team_lags("SAC")
+relevant_team_lags("NYK")
+relevant_team_lags("NOP")
+relevant_team_lags("MIN")
+relevant_team_lags("PHX")
+relevant_team_lags("BKN")
+relevant_team_lags("LAL")
+relevant_team_lags("PHI")
+```
+#Top and botton team lag analysis 16-17 season
+Place  |    Team    |   Lags    |
+  1         GSW         7
+  2         SAS         1,2
+  3         CLE         -
+  4         TOR         -
+  5         OKC         4,11
+  6         LAC         -
+  7         ATL         13
+  8         BOS         2
+  9         CHA         -
+  10        MIA         -
+Place  |    Team    |   Lags    |
+  21        DEN         4,10
+  22        MIL         9
+  23        SAC         N/A
+  24        NYK         1,2,3,5
+  25        NOP         1,11
+  26        MIN         -
+  27        PHX         5,14
+  28        BKN         13
+  29        LAL         1,2
+  30        PHI         10
+
+-Cleveland won title
+-6/10 teams were unpredictable of the teams with the 10 best records
+-4/9 teams were unpredictable of the teams with the 9 best records
+
+##################################################################
+
+
+#Top and botton team lag analysis 16-17 season
+```{r}
+#top teams
+relevant_team_lags("GSW")
+relevant_team_lags("SAS")
+relevant_team_lags("HOU")
+relevant_team_lags("BOS")
+relevant_team_lags("CLE")
+relevant_team_lags("LAC")
+relevant_team_lags("TOR")
+relevant_team_lags("UTA")
+relevant_team_lags("WAS")
+relevant_team_lags("OKC")
+
+#Bottom teams
+relevant_team_lags("NOP")
+relevant_team_lags("DAL")
+relevant_team_lags("SAC")
+relevant_team_lags("MIN")
+relevant_team_lags("NYK")
+relevant_team_lags("ORL")
+relevant_team_lags("PHI")
+relevant_team_lags("LAL")
+relevant_team_lags("PHX")
+relevant_team_lags("BKN")
+```
+#Top and botton team lag analysis 16-17 season
+Place  |    Team    |   Lags    |
+  1         GSW         12
+  2         SAS         -
+  3         HOU         2,9
+  4         BOS         6,8,14
+  5         CLE         2
+  6         LAC         4
+  7         TOR         3,6
+  8         UTA         -
+  9         WAS         -
+  10        OKC         2,17
+Place  |    Team    |   Lags    |
+  21        NOP         -
+  22        DAL         10,11,18
+  23        SAC         N/A
+  24        MIN         -
+  25        NYK         3
+  26        ORL         -
+  27        PHI         -
+  28        LAL         -
+  29        PHX         -
+  30        BKN         -
+
+-Golden state won title
+-4/10 teams were unpredictable of the teams with the 10 best records
+-8/9 teams were unpredictable of the teams with the 9 worst records
+
+####################################################################
+
+
+
+#Top and botton team lag analysis 17-18 season
+```{r}
+#top teams
+relevant_team_lags("HOU")
+relevant_team_lags("TOR")
+relevant_team_lags("GSW")
+relevant_team_lags("BOS")
+relevant_team_lags("PHI")
+relevant_team_lags("CLE")
+relevant_team_lags("POR")
+relevant_team_lags("IND")
+relevant_team_lags("NOP")
+relevant_team_lags("OKC")
+
+#Bottom teams
+relevant_team_lags("LAL")
+relevant_team_lags("NYK")
+relevant_team_lags("BKN")
+relevant_team_lags("CHI")
+relevant_team_lags("SAC")
+relevant_team_lags("ORL")
+relevant_team_lags("ATL")
+relevant_team_lags("DAL")
+relevant_team_lags("MEM")
+relevant_team_lags("PHX")
+```
+#Top and botton team lag analysis 17-18 season
+Place  |    Team    |   Lags    |
+  1         HOU         3,18
+  2         TOR         13
+  3         GSW         -
+  4         BOS         -
+  5         PHI         -
+  6         CLE         14
+  7         POR         3,10,13,19
+  8         IND         17
+  9         NOP         17
+  10        OKC         -
+Place  |    Team    |   Lags    |
+  21        LAL         -
+  22        NYK         -
+  23        BKN         1,4,6
+  24        CHI         -
+  25        SAC         N/A
+  26        ORL         -
+  27        ATL         17
+  28        DAL         13
+  29        MEM         1,7,11
+  30        PHX         2
+
+-Golden State won title
+-8/10 teams were unpredictable of the teams with the 10 best records
+-6/9 teams were unpredictable of the teams with the 9 worst records
+
+#################################################################
+#OVerall analysis
+-over 5 seasons teams with the 10 best records were 28/50 or 56% of them were unpredictable
+-over 5 season teams with the 9 worst records were 29/45 or 64.4% of the time were unpredictable
+
+```{r}
+team_lag_graphs("MIA")
+relevant_team_lags("MIA")
+```
+
+
+#Miami
+The 13-14 season the one game lag is of significance. It is positive meaning they had similar centralization on a game to game basis. The 6 and 7 lag has a significant level but is negative indicating a change in the centralization. 9 and 10 game lag is also significant with the centralization changing on 9 and 10 game lag. 14 and 16 game lag is significant on same centralizaion. The Heats record this year was 54-28 and was the final season that the big three were all together.
+The 14-15 season had significant positive lag for 13 and 17 games. Their record this year was 37-45
+The remainder of the data didn't have any significant lags. The Heats records for those years were 48-34, 41-41, and 44-38 for the last three seasons of the data set respectively
+
+
+
+
+```{r}
+team_lag_graphs("MIL")
+```
+
+#Milwaukee
+13-14 season has a signigicant positive lag for 2 games. The only other significant lag was for 12 game lag in the negative. Their record this year was 15-67
+14-15 season had high significence in the 1 and 2 game lags for the positive. These two were very strong as they are well above the .2 threshhold. 13 game lag is signigficant in the negative. They went 41-41.
+15-16 season they only had one significant lag which was 9 games. It was in the positive. Their record was 33-49
+16-17 season there were two significant lags for 1 and 4 games. Both of these were in the negative so centralization changed. They went 42 and 40 this year.
+17-18 season saw no significant lag trends. they went 44-38
+
+
+```{r}
+team_lag_graphs("MIN")
+```
+
+#Minnesota
+13-14 season there were no significant lag trends and they went 40-42
+14-15 season they had a very unique. They 7-8 significant lags all of which are in the positive. Not a signle line is in the negative. They did not change anything across any period of time. Lag for 1-4 and maybe 5 are all positive. THey had a record of 16-66
+15-16 season there are no significant change and had a record of 29-53.
+16-17 season there are no significant change and had record of 31-51. Have had a different coach each of the four years.
+17-18 season the 2 game lag might be significant in the negative. This is the first sesaon they have the same coach from the previous season. Went 47-35
+
+
+```{r}
+team_lag_graphs("NOP")
+```
+
+#New Oreleans
+13-14 there was a significant centralization change for the 16 game lag but that is the only one. They went 34-48 that year.
+14-15 season there was a significant change in centralization for 6 game lag but again that is the only one. They went 45-37. 
+15-16 season there was common centralization for 1 game lag as well as 11 game lag. they went 30-52
+16-17 season there was no significant point. they went 34-48.
+17-18 there was significant centralization similarities for 17 game lag. They went 48-34
+
+
+
+```{r}
+team_lag_graphs("NYK")
+```
+
+#New York Knicks
+13-14 season 11 game lag show similarity in centralization. they went 37-45
+14-15 season they also show 11 game lag similarity in centralization but went 17-65 and had a different coach
+15-16 season has significant similarity in centralization for 1, 2, 3, and 5 game lags. they went 32-50 and had coaching change
+16-17 only 3 game lag was close to being significant. went 31-51.
+17-18 didn't have any significant centralization trends across all lags. Went 29-53
+
+
+
+```{r}
+team_lag_graphs("OKC")
+```
+
+#Oklahoma City
+13-14 nothing significant. Went 59-23.
+14-15 only positive values. 2, 4, and 6 game lag has similarites in centralization. 45-37, last year under scott brooks. Could have gotten too comfortable with Brooks and stopped changing game plan.
+15-16 4 game lag had significance in centralization change, while 11 game lag had it in the positive. went 55-27 under first year with new coach Billy DOnovan.
+16-17 significant 2 and 17 game lag for similarity in centralization. This is kind of similar to 14-15 season and with similar record of 47-35. After KD left and it was just Westbrook, Oladipo, and Steven Adams.
+17-18 nothing sugnificant record was 48-34. Team had paul george, westbrook, adams, and carmelo.
+
+
+
+```{r}
+team_lag_graphs("ORL")
+```
+
+#Orlando
+13-14 season had a 1 game lag sigificane for centralization similarity, they went 23-59
+14-15 had a very significant 5 game lag for similarity but also a significant 13 game lag for differences in centralization. this team went 25-57
+15-16 didn't have any significant values. They went 35-47
+16-17 also didn't really have any significant values, and went 29-53.
+17-18 didn't either and went 25-57. Was perennially bad but didn't show consistent trend in lags.
+
+
+
+```{r}
+team_lag_graphs("PHI")
+```
+
+#Philadelphia
+13-14 had 12 game lag that was significant for differences in centralization. went 19-63
+14-15 significant for 1 and 7 game lags for centralization similarity. Team went 18-64
+15-16 only 10 game lag has significant similarity in centralization. Team went 10-72
+16-17 no significant data team went 28-54.
+17-18 no significant points, however, you see much more negative values across the lags and was the first time team had winning record 52-30
+
+
+
+```{r}
+team_lag_graphs("PHX")
+```
+
+#Phoenix
+13-14 had no significant points, and went 48-34
+14-15 had 1 and 3 game lag similarities for centralization. Team went 39-43.
+15-16 had similar centralization for 2 and 5 game lags but different for 14 game lag and went 23-59
+16-17 didn't have significant points and went 24-58
+17-18 very strong 2 game lag for change in centralization went 21-61. Strongest value ive seen so far.
+
+
+
+```{r}
+team_lag_graphs("POR")
+```
+
+#Portland
+13-14 no significant points. Went 54-28.
+14-15 strong significance for 1 and 3 game lag as well as some for 17. went 51-31. What changed between season, team core was same Aldridge, lillard, mccollum, and same coach and similar record
+15-16 no significant points and went 44-38. lost aldridge.
+16-17 12 game lag is significant for centralization change. team went 41-41. Gained Nurkic
+17-18 3 game lag has smililar centralization but 10 and 19 game lag have different centralizaiton trends. Team went 49-33. practically same team as year before
+
+
+
+```{r}
+team_lag_graphs("SAC")
+
+```
+
+#Sacramento
+
+
+
+
+```{r}
+team_lag_graphs("SAS")
+```
+
+#San Antonio
+13-14 only significant point is the 5 game lag for change in centralization. went 62-29. This team won the finals. No one person averaged over 20 points a game. Parker, Duncan,  Leonard, Ginobili.
+14-15 had high significance for 2 game lag. went 55-27. Same exact team as before with no one over 20ppg. lost western conference first round
+15-16 high significance for 1, 2 and possibly 12 game lag. Went 67-15 for best record of the data set. Leonard had over 20ppg and aldridge joined team and Giniobili gone. lost western conference semis
+16-17 no trends across lags. went 61-21. practically same team plus pau Gasol. lost conference finals
+17-18 high significance for 15 and 16 game lag for similarity. had worst record of the five years at 47-35 still made playoffs lost first round. Leonard only played 9 games
+
+
+
+```{r}
+team_lag_graphs("TOR")
+```
+
+#Toronto
+13-14 significance for 11 and 13 game lag in similarity of centralization. Team went 48-34
+14-15 No significant data across lag went 49-33
+15-16 no signigicant data across lag went 56-26
+16-17 Significant for 3 and 6 game lag with centralization similarity. went 51-31.
+17-18 only 13 game lag was significant and it was for difference in centralization. team went 59-23
+
+
+
+```{r}
+team_lag_graphs("UTA")
+```
+
+#UTAH
+13-14 12 game lag for change in centralization but that is all. Team went 25-57
+14-15 no significant points went 38-44
+15-16 only significant point is 17 game lag for change in centralization team went 38-44
+16-17 no significant points and team went 51-31
+17-18 positive for 16 game lag where team went 48-34
+
+
+
+```{r}
+team_lag_graphs("WAS")
+```
+
+#Washington
+13-14 no significant lag points teame went 44-38
+14-15 no significant lag points team went 46-36
+15-16 slight significance for 9 game lag in similarity of centralization, team went 41-41
+16-17 no significant lag points team went 49-33
+17-18 10, 14, and 19 game lag points for differences in centralizaion team went 43-39
+
+
+
+
