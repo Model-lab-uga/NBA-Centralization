@@ -13,7 +13,7 @@ library(tibble)
 library(lubridate)
 ```
 
-
+#added files into enviornment through the import data set in R studio. This is justhe visulaization of that.
 ```{r}
 nba_odds_2013_14 <- read_excel("NBA odds 2013-2018/nba odds 2013-14.xlsx")
 nba_odds_2014_15 <- read_excel("NBA odds 2013-2018/nba odds 2014-15.xlsx")
@@ -22,7 +22,7 @@ nba_odds_2016_17 <- read_excel("NBA odds 2013-2018/nba odds 2016-17.xlsx")
 nba_odds_2017_18 <- read_excel("NBA odds 2013-2018/nba odds 2017-18.xlsx")
 ```
 
-
+#Adds and fills the year column, adds the opponent column, and adds the win/loss columns
 ```{r}
 nba_odds_2013_14$Year <- "2013-14"
 nba_odds_2014_15$Year <- "2014-15"
@@ -38,12 +38,12 @@ as.Date(as.character(nba_odds_2013_14[[1,1]]), format = "%m%d")
 nba_odds_2013_14[[1,1]]
 ```
 
+#Combines all the individual tables into one table
 ```{r}
-merge(nba_odds_2013_14, nba_odds_2014_15)
 nba_odds_13_18 <- rbind(nba_odds_2013_14, nba_odds_2014_15, nba_odds_2015_16, nba_odds_2016_17, nba_odds_2017_18)
 ```
 
-#Adding opponent to last column 
+#filling in the opponent column 
 ```{r}
 
 for (k in seq(2, nrow(nba_odds_13_18[,1]), 2)) {
@@ -55,7 +55,7 @@ for (i in seq(1, nrow(nba_odds_13_18[,1]), 2)) {
 }
 ```
 
-#Adding Win and loss column
+#Filling in the Win and loss column
 ```{r}
 
 for (l in seq(1, nrow(nba_odds_13_18[,1]), 2)) {
@@ -74,23 +74,14 @@ for (l in seq(1, nrow(nba_odds_13_18[,1]), 2)) {
     
 }
 
-
-nba_odds_13_18[[1,9]]
 ```
 
 
-
+#Wins and losses as favorite and underdog
 ```{r}
-for (i in seq(2, nrow(nba_odds_2013_14[,1]), 2)) {
-  print(i)
-}
-```
 
-
-
-```{r}
 nba_odds_13_18 %>% group_by(Team) %>% 
-  group_by(ML <= 101, WinLoss )%>% count()
+  group_by(ML <= 100, WinLoss )%>% count()
   
 ```
 
