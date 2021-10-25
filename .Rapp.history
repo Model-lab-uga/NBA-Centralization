@@ -1,1 +1,2 @@
 load("/Users/Neal/Documents/GitHub/NBA-Centralization/full_long_lags.rds")
+load("/Users/Neal/Documents/GitHub/NBA-Centralization/team_w_lags.rds")
