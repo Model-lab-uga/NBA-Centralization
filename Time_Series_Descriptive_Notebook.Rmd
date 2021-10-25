@@ -13,14 +13,92 @@ lag_data <- read_rds("/Users/Neal/Documents/GitHub/NBA-Centralization/team_w_lag
 
 
 ```{r}
-lag_data %>% ungroup() %>% 
+single_plot <- lag_data %>% ungroup() %>% 
   filter(TEAM_ABBREVIATION == "ATL", !is.na(tot_deg_cent)) %>%
   arrange(slugSeason, numberGameTeamSeason) %>%
   as_tsibble(key = c(slugSeason, TEAM_ABBREVIATION), index = c(numberGameTeamSeason)) %>% fill_gaps(.full = TRUE) %>%
   ACF(tot_deg_cent) %>%
   autoplot()
+
+str(single_plot)
+single_plot$data %>% filter(acf >= .2)
 ```
 
+# Finding significant lags
+```{r}
+acf_dat <- lag_data %>% group_by(TEAM_ABBREVIATION,yearSeason) %>%
+  filter(!is.na(yearSeason)) %>%
+  nest() %>%
+  transmute(acfs =  map(data, {. %>% 
+      filter(!is.na(tot_deg_cent)) %>%
+  arrange(slugSeason, numberGameTeamSeason) %>%
+  as_tsibble(key = c(slugSeason), index = c(numberGameTeamSeason), validate = F) %>% fill_gaps(.full = TRUE) %>%
+  ACF(tot_deg_cent) %>% filter(acf >= .2 | acf <= -.2) %>% pull(lag)}),
+  wins = map(data, {. %>% summarize(winP = mean(isWin)) %>% 
+      pull(winP)}),
+  predictable = map(acfs, ~{if(!is_empty(.)){
+    any(.[1] < 10)
+  }else{FALSE}})) %>% 
+  select(-acfs) %>%
+  unnest() %>%
+  group_by(yearSeason) %>%
+  mutate(winZ = scale(wins))
+ 
+
+```
+
+Quick test to see meaningful differences in our grouping
+```{r}
+acf_dat %>% 
+  mutate(pnum = pnorm(winZ),
+         good = case_when(pnum > .75 ~ "Good",
+                          pnum < .25 ~ "Bad")) %>%
+  group_by(predictable, good) %>%
+  summarize(winPm = mean(wins),
+            winPsd = sd(wins))
+
+
+```
+
+
+# Expanded testing
+## Create groupings in original dataset
+```{r}
+comp_Dat <- acf_dat %>% 
+  mutate(pnum = pnorm(winZ),
+         good = case_when(pnum > .75 ~ "Good",
+                          pnum < .25 ~ "Bad")) %>%
+  ungroup() %>%
+  inner_join(.,lag_data, by = c("yearSeason","TEAM_ABBREVIATION"))
+```
+
+
+
+```{r}
+library(summarytools)
+comp_Dat %>% 
+  group_by(predictable, good) %>%
+  select(wins, in_deg_cent, out_deg_cent,
+         tot_core_lvl, tot_core_size) %>%
+  descr(stats = "fivenum")
+
+comp_Dat %>% 
+  group_by(predictable, good) %>%
+  select(contains(c("pct"))) %>%
+  descr(stats = "fivenum")
+
+# ,,"ast","stl","blk", "tov","pf"
+# ,contains(c("pct", "plusminus"))
+
+comp_Dat %>% 
+  group_by(predictable, good, locationGame) %>%
+  summarize(
+         mfg = mean(pctFGTeam),
+         sdPlus = sd(plusminusTeam),
+         mplus = mean(plusminusTeam))
+
+
+```
 
 
 
