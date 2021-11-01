@@ -1,0 +1,42 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(fpp3)
+```
+
+
+
+
+```{r}
+hlm_data <- read.csv("/Users/Neal/Documents//GitHub/NBA-Centralization/nba_long_nets_ready_for_hlm_2.csv")
+
+hlts <- hlm_data %>%
+  filter(!is.na(numberGameTeamSeason)) %>% 
+  mutate(dateGame = as_date(dateGame)) %>% 
+  as_tsibble(., key = c(slugTeam,slugSeason,dateGame), index = numberGameTeamSeason, validate = F)
+
+test_model <- hlts %>% 
+  model(tslm = TSLM(plusminusTeam ~ tovTeam + astTeam + ftmTeam +
+                      tot_deg_cent))
+report(test_model)
+
+fit_consMR <- us_change %>%
+  model(tslm = TSLM(Consumption ~ Income + Production +
+                                    Unemployment + Savings))
+report(fit_consMR)
+```
+
+
+
+
+
+
+
+
+
+
+
+
