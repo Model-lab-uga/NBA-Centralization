@@ -1,2 +1,3 @@
 load("/Users/Neal/Documents/GitHub/NBA-Centralization/full_long_lags.rds")
 load("/Users/Neal/Documents/GitHub/NBA-Centralization/team_w_lags.rds")
+load("/Users/Neal/Documents/GitHub/NBA-Centralization/injury_for_2014.rds")
