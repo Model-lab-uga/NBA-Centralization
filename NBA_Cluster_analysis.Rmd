@@ -1,0 +1,350 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(mclust)
+team_agg <- openxlsx::read.xlsx("https://github.com/noutland-stats/3990_UGA/raw/main/season_team_agg.xlsx")
+```
+
+```{r}
+clust1D <- team_agg %>%
+  select(in_deg_cent,out_deg_cent,tot_deg_cent,
+         fgmTeam, fgaTeam, pctFG2Team,fg3mTeam,fg3aTeam,
+         pctFG3Team, pctFTTeam,ftaTeam,orebTeam,drebTeam,
+         trebTeam, astTeam,stlTeam, blkTeam, tovTeam,pfTeam,
+         ptsTeam,plusminusTeam,pass_vol) %>%
+  filter(!is.na(in_deg_cent)) 
+
+clust1 <-  Mclust(data = na.omit(data.frame(clust1D)))
+summary(clust1)
+
+clust2D <- team_agg %>%
+  select(slugTeam, slugSeason, in_deg_cent,out_deg_cent,tot_deg_cent,
+         fgmTeam, fgaTeam, pctFG2Team,fg3mTeam,fg3aTeam,
+         pctFG3Team, pctFTTeam,ftaTeam,orebTeam,drebTeam,
+         trebTeam, astTeam,stlTeam, blkTeam, tovTeam,pfTeam,
+         ptsTeam,plusminusTeam,pass_vol) %>% 
+  drop_na() %>%
+  group_by(slugTeam, slugSeason) %>%
+  summarize_all(list(m = mean,s = sd), na.rm = T) %>% 
+  ungroup() %>%
+  select(-slugTeam, -slugSeason) %>%
+  scale()
+
+clust2 <- kmeans(data.frame(clust2D), centers = 2)
+clust3 <- kmeans(data.frame(clust2D), centers = 3)
+clust4 <- kmeans(data.frame(clust2D), centers = 4)
+clust5 <- kmeans(data.frame(clust2D), centers = 5)
+clust8 <- kmeans(data.frame(clust2D), centers = 8)
+clust9 <- kmeans(data.frame(clust2D), centers = 9)
+
+
+
+clust2m <- mclustBIC(data = clust3D)
+
+clust2mm <- Mclust(data.frame(clust3D))
+summary(clust2m)
+summary(clust2mm)
+
+
+# visualize 4 cluster kmeans solution
+team_agg %>%
+  select(slugTeam, slugSeason,isWin,
+         coaching_change, Franch_Seasons, Tot_Seasons,
+         num_players) %>% 
+  filter(!is.na(slugTeam)) %>%
+  group_by(slugTeam, slugSeason) %>%
+  summarize(winP = mean(isWin),
+            coachC = mean(coaching_change),
+            franS = mean(Franch_Seasons),
+            totS = mean(Tot_Seasons),
+            numPlay = sum(num_players)) %>%
+  ungroup() %>%
+  mutate(cluster = clust4$cluster) %>%
+  select(-slugTeam,-slugSeason) %>% 
+  group_by(cluster) %>%
+  summarize_all(list(mean = mean,sd = sd))
+
+
+# visualize 8 cluster kmeans solution
+team_agg %>%
+  select(slugTeam, slugSeason,isWin,
+         coaching_change, Franch_Seasons, Tot_Seasons,
+         num_players) %>% 
+  filter(!is.na(slugTeam)) %>%
+  group_by(slugTeam, slugSeason) %>%
+  summarize(winP = mean(isWin),
+            coachC = mean(coaching_change),
+            franS = mean(Franch_Seasons),
+            totS = mean(Tot_Seasons),
+            numPlay = sum(num_players)) %>%
+  ungroup() %>%
+  mutate(cluster = clust8$cluster) %>%
+  select(-slugTeam,-slugSeason) %>% 
+  group_by(cluster) %>%
+  summarize_all(list(mean = mean,sd = sd))
+
+# visualize 9 cluster kmeans solution
+team_agg %>%
+  select(slugTeam, slugSeason,isWin,
+         coaching_change, Franch_Seasons, Tot_Seasons,
+         num_players) %>% 
+  filter(!is.na(slugTeam)) %>%
+  group_by(slugTeam, slugSeason) %>%
+  summarize(winP = mean(isWin),
+            coachC = mean(coaching_change),
+            franS = mean(Franch_Seasons),
+            totS = mean(Tot_Seasons),
+            numPlay = sum(num_players)) %>%
+  ungroup() %>%
+  mutate(cluster = clust9$cluster) %>%
+  select(-slugTeam,-slugSeason) %>% 
+  group_by(cluster) %>%
+  summarize_all(list(mean = mean,sd = sd))
+
+
+team_agg %>%
+  select(slugTeam, slugSeason, in_deg_cent,out_deg_cent,tot_deg_cent,
+         fgmTeam, fgaTeam, pctFG2Team,fg3mTeam,fg3aTeam,
+         pctFG3Team, pctFTTeam,ftaTeam,orebTeam,drebTeam,
+         trebTeam, astTeam,stlTeam, blkTeam, tovTeam,pfTeam,
+         ptsTeam,plusminusTeam,pass_vol) %>% 
+  drop_na() %>%
+  group_by(slugTeam, slugSeason) %>%
+  summarize_all(list(m = mean,s = sd), na.rm = T) %>% 
+  ungroup() %>%
+  select(slugTeam, slugSeason) %>%
+  mutate(cluster = clust4$cluster)
+  
+```
+
+
+```{r}
+team_agg %>%
+  select(slugTeam, slugSeason,isWin,
+         coaching_change, Franch_Seasons, Tot_Seasons,
+         num_players) %>% 
+  filter(!is.na(slugTeam)) %>%
+  group_by(slugTeam, slugSeason) %>%
+  summarize(winP = mean(isWin),
+            coachC = mean(coaching_change),
+            franS = mean(Franch_Seasons),
+            totS = mean(Tot_Seasons),
+            numPlay = sum(num_players)) %>%
+  ungroup() %>%
+  mutate(cluster = clust4$cluster) %>%
+  select(-slugTeam,-slugSeason) %>% 
+  group_by(cluster) %>%
+  summarize_all(list(mean = mean,sd = sd))
+```
+
+
+
+```{r}
+clust3D <- team_agg %>%
+  select(slugTeam, slugSeason, in_deg_cent,out_deg_cent,tot_deg_cent,
+        ) %>% 
+  drop_na() %>%
+  group_by(slugTeam, slugSeason) %>%
+  summarize_all(list(m = mean,s = sd, mi = min, ma = max), na.rm = T) %>% 
+  ungroup() %>%
+  select(-slugTeam, -slugSeason) %>%
+  scale()
+
+#must run without scaling the clust3d var
+resNB <- clust3D %>%
+  select(where(is.numeric)) %>%
+NbClust::NbClust(distance = "euclidean",
+          min.nc = 2, max.nc = 10, 
+          method = "complete", index ="all")
+
+fviz_nbclust(resNB, ggtheme = theme_minimal())
+
+clust23 <- kmeans(data.frame(clust3D), centers = 2)
+clust33 <- kmeans(data.frame(clust3D), centers = 3)
+clust43 <- kmeans(data.frame(clust3D), centers = 4)
+clust53 <- kmeans(data.frame(clust3D), centers = 5)
+clust83 <- kmeans(data.frame(clust3D), centers = 8)
+clust93 <- kmeans(data.frame(clust3D), centers = 9)
+
+
+# visualize 4 cluster kmeans solution
+team_agg %>%
+  select(slugTeam, slugSeason,isWin,
+         coaching_change, Franch_Seasons, Tot_Seasons,
+         num_players) %>% 
+  drop_na() %>%
+  group_by(slugTeam, slugSeason) %>%
+  summarize(winP = mean(isWin),
+            coachC = mean(coaching_change),
+            franS = mean(Franch_Seasons),
+            totS = mean(Tot_Seasons),
+            numPlay = sum(num_players)) %>%
+  ungroup() %>%
+  mutate(cluster = clust43$cluster) %>%
+  select(-slugTeam,-slugSeason) %>% 
+  group_by(cluster) %>%
+  summarize_all(list(mean = mean,sd = sd))
+
+
+# visualize 8 cluster kmeans solution
+team_agg %>%
+  select(slugTeam, slugSeason,isWin,
+         coaching_change, Franch_Seasons, Tot_Seasons,
+         num_players) %>% 
+  filter(!is.na(slugTeam)) %>%
+  group_by(slugTeam, slugSeason) %>%
+  summarize(winP = mean(isWin),
+            coachC = mean(coaching_change),
+            franS = mean(Franch_Seasons),
+            totS = mean(Tot_Seasons),
+            numPlay = sum(num_players)) %>%
+  ungroup() %>%
+  mutate(cluster = clust8$cluster) %>%
+  select(-slugTeam,-slugSeason) %>% 
+  group_by(cluster) %>%
+  summarize_all(list(mean = mean,sd = sd))
+
+# visualize 9 cluster kmeans solution
+team_agg %>%
+  select(slugTeam, slugSeason,isWin,
+         coaching_change, Franch_Seasons, Tot_Seasons,
+         num_players) %>% 
+  filter(!is.na(slugTeam)) %>%
+  group_by(slugTeam, slugSeason) %>%
+  summarize(winP = mean(isWin),
+            coachC = mean(coaching_change),
+            franS = mean(Franch_Seasons),
+            totS = mean(Tot_Seasons),
+            numPlay = sum(num_players)) %>%
+  ungroup() %>%
+  mutate(cluster = clust9$cluster) %>%
+  select(-slugTeam,-slugSeason) %>% 
+  group_by(cluster) %>%
+  summarize_all(list(mean = mean,sd = sd))
+
+```
+
+
+```{r}
+clust_outcome <- team_agg %>%
+  select(slugTeam, slugSeason,
+         fgmTeam, fgaTeam, pctFG2Team,fg3mTeam,fg3aTeam,
+         pctFG3Team, pctFTTeam,ftaTeam,orebTeam,drebTeam,
+         trebTeam, astTeam,stlTeam, blkTeam, tovTeam,pfTeam,
+         plusminusTeam,pass_vol) %>% 
+  drop_na() %>%
+  group_by(slugTeam, slugSeason) %>%
+  summarize_all(list(m = mean,s = sd), na.rm = T) %>% 
+  ungroup() %>%
+  select(-slugTeam, -slugSeason)
+
+clust_outcome2 <- team_agg %>%
+  select(slugTeam,slugSeason,numberGameTeamSeason, locationGame,
+         fgmTeam, fgaTeam, pctFG2Team,fg3mTeam,fg3aTeam,
+         pctFG3Team, pctFTTeam,ftaTeam,orebTeam,drebTeam,
+         trebTeam, astTeam,stlTeam, blkTeam, tovTeam,pfTeam,
+         plusminusTeam,pass_vol) %>% 
+  drop_na() %>%
+  group_by(slugTeam,slugSeason,locationGame) %>%
+  summarize_all(list(m = mean,s = sd), na.rm = T) %>% 
+  ungroup() %>%
+  select(-slugTeam, -locationGame, -slugSeason)
+```
+
+
+
+
+# T-SNE
+```{r}
+library(factoextra)
+pcaclust <- prcomp(clustD, scale = F)
+
+fviz_eig(pcaclust)
+
+fviz_pca_ind(pcaclust,
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+fviz_pca_var(pcaclust,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+library(Rtsne)
+
+clustTsne <- team_agg %>%
+  select(slugTeam, slugSeason, in_deg_cent,out_deg_cent,tot_deg_cent,
+         fgmTeam, fgaTeam, pctFG2Team,fg3mTeam,fg3aTeam,
+         pctFG3Team, pctFTTeam,ftaTeam,orebTeam,drebTeam,
+         trebTeam, astTeam,stlTeam, blkTeam, tovTeam,pfTeam,
+         ptsTeam,plusminusTeam,pass_vol) %>% 
+  drop_na() %>%
+  group_by(slugTeam, slugSeason) %>%
+  summarize_all(list(m = mean,s = sd), na.rm = T) %>% 
+  ungroup() %>%
+  mutate(ID = row_number()) %>%
+  column_to_rownames("ID")
+  
+tsnefit <- clustTsne %>%
+  select(where(is.numeric)) %>%
+  scale() %>% 
+  Rtsne()
+
+tSNE_df <- tsnefit$Y %>% 
+  as.data.frame() %>%
+  rename(tSNE1="V1",
+         tSNE2="V2") %>%
+  mutate(ID=row_number())
+
+tSNE_df <- tSNE_df %>%
+  bind_cols(clustTsne)
+
+
+```
+
+```{r}
+tSNE_df %>%
+  ggplot(aes(x = tSNE1, 
+             y = tSNE2,
+             color = slugSeason,
+             shape = as.factor(clust5$cluster))) +
+  geom_point()+
+  theme(legend.position="bottom")
+```
+This projection makes me think that there are different styles of play per years.
+
+
+```{r}
+tSNE_df %>%
+  ggplot(aes(x = tSNE1, 
+             y = tSNE2,
+             color = as.factor(clust5$cluster))) +
+  geom_point()+
+  theme(legend.position="bottom")
+```
+
+
+# using DB scan
+```{r}
+library(fpc)
+
+dbtest <- dbscan(clust_outcome2, eps = 12)
+
+fviz_cluster(dbtest, data = clust_outcome2, stand = FALSE,
+             ellipse = FALSE, show.clust.cent = FALSE,
+             geom = "point",palette = "jco", ggtheme = theme_classic())
+
+dbscan::kNNdistplot(clust_outcome2, k = 4)
+```
+
+```{r}
+dbtest$cluster
+```
+
