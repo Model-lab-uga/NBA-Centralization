@@ -1,0 +1,77 @@
+---
+title: "NBA Cluster Descriptives"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+team_agg <- openxlsx::read.xlsx("https://github.com/noutland-stats/3990_UGA/raw/main/season_team_agg.xlsx")
+
+team_bios <- read_csv("https://github.com/Model-lab-uga/NBA-Centralization/raw/main/playerbios.csv")
+
+team_grouping <- openxlsx::read.xlsx("https://github.com/Model-lab-uga/NBA-Centralization/raw/main/lags_groups.xlsx")
+
+```
+
+
+### grouping into good and bad predictable vs unpredictablee
+```{r}
+
+team_agg2 <- team_agg %>%
+  filter(slugTeam != "SAC")
+
+combDat <- team_grouping %>% 
+  filter(slugTeam != "SAC") %>%
+  mutate(slugSeason = str_trim(str_replace_all(slugSeason, "-20","-")),
+         over = sign(Difference),
+         slugTeam = str_trim(slugTeam)) %>%
+  full_join(team_agg2)
+```
+
+
+### 
+```{r}
+combDat %>%
+  group_by(slugSeason,lag._5, over) %>%
+  summarize(mfgp = mean(pctFGTeam, na.rm = T),
+            mfg3p = mean(pctFG3Team, na.rm = T),
+            mfga3 = mean(fg3aTeam, na.rm = T),
+            mftp = mean(pctFTTeam),
+            mfta = mean(ftaTeam,na.rm = T),
+            mast = mean(astTeam, na.rm = T),
+            mblock = mean(blkTeam, na.rm = T),
+            mtov = mean(tovTeam, na.rm = T),
+            mpassV = mean(pass_vol, na.rm = T),
+            degC = mean(tot_deg_cent, na.rm = T),
+            mplus = mean(plusminusTeam, na.rm = T),
+            msdfga3 = mean(sd_fg3a, na.rm = T),
+            msdftm = mean(sd_ftm,na.rm = T),
+            msdast = mean(sd_ast, na.rm = T),
+            msdblock = mean(sd_blk, na.rm = T),
+            msdtov = mean(sd_tov, na.rm = T),
+            msdStl = mean(sd_stl, na.rm = T),
+            sddegC = mean(sd_tot_cent, na.rm = T),
+            msdplus = mean(sd_plus_minus, na.rm = T)) %>%
+  filter(slugSeason == "2013-14",
+         over != 0)
+```
+
+```{r}
+combDat %>%
+  group_by(lag_10) %>%
+  summarize(mfgp = mean(pctFGTeam, na.rm = T),
+            mfg3p = mean(pctFG3Team, na.rm = T),
+            mfga3 = mean(fg3aTeam, na.rm = T),
+            mftp = mean(pctFTTeam, na.rm = T),
+            mfta = mean(ftaTeam,na.rm = T),
+            mast = mean(astTeam, na.rm = T),
+            mblock = mean(blkTeam, na.rm = T),
+            mtov = mean(tovTeam, na.rm = T),
+            mpassV = mean(pass_vol, na.rm = T),
+            degC = mean(tot_deg_cent, na.rm = T),
+            mplus = mean(plusminusTeam, na.rm = T),
+            samp = n())
+```
+
+
